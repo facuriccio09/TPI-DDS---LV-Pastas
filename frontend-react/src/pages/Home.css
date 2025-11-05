@@ -1,0 +1,187 @@
+.home-page {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-image: url('../media/Local desde afuera.jpeg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.1) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(192, 57, 43, 0.2) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-content {
+  text-align: center;
+  color: white;
+  z-index: 2;
+  position: relative;
+}
+
+.hero-title {
+  font-size: 5rem;
+  font-weight: 900;
+  margin-bottom: 1.2rem;
+  text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.7);
+  font-style: italic;
+  letter-spacing: 1px;
+  animation: fadeInDown 1s ease-in-out;
+}
+
+.hero-subtitle {
+  font-size: 2.2rem;
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+  letter-spacing: 2px;
+  animation: fadeInUp 1s ease-in-out 0.2s both;
+}
+
+.hero-description {
+  font-size: 1.4rem;
+  margin-bottom: 2.5rem;
+  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.6);
+  font-weight: 300;
+  animation: fadeInUp 1s ease-in-out 0.4s both;
+}
+
+.hero-button {
+  padding: 16px 48px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: 50px;
+  animation: fadeInUp 1s ease-in-out 0.6s both;
+  transition: all 0.4s ease;
+  background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(192, 57, 43, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hero-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(192, 57, 43, 0.6);
+  background: linear-gradient(135deg, #a93226 0%, #c0392b 100%) !important;
+}
+
+/* Sobre Nosotros Section */
+.sobre-nosotros {
+  background-color: #ffffff;
+  padding-top: 4rem !important;
+  padding-bottom: 4rem !important;
+}
+
+.section-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.title-underline {
+  width: 100px;
+  height: 5px;
+  background: linear-gradient(to right, #c0392b, #e74c3c);
+  margin-bottom: 3rem;
+  border-radius: 5px;
+}
+
+.sobre-nosotros img {
+  transition: transform 0.3s ease;
+}
+
+.sobre-nosotros img:hover {
+  transform: scale(1.02);
+}
+
+/* Productos Destacados */
+.productos-destacados {
+  background-color: #f8f9fa;
+}
+
+.product-card {
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: white;
+}
+
+.product-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.product-icon {
+  font-size: 4rem;
+}
+
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.5rem;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+}
