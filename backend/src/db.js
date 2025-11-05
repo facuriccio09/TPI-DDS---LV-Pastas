@@ -3,7 +3,7 @@ const { Sequelize } = require('sequelize');
 // Configuración de la base de datos SQLite
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: './database.sqlite',
+  storage: './src/data/database.sqlite',
   logging: false, // Cambiar a console.log para ver las queries SQL
 });
 
@@ -20,7 +20,8 @@ const testConnection = async () => {
 // Función para sincronizar modelos
 const syncDatabase = async () => {
   try {
-    await sequelize.sync({ alter: true });
+    // Solo sincronizar sin alterar (no modifica tablas existentes)
+    await sequelize.sync();
     console.log('✓ Base de datos sincronizada.');
   } catch (error) {
     console.error('✗ Error al sincronizar la base de datos:', error);

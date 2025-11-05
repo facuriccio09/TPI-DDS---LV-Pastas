@@ -1,5 +1,6 @@
 const app = require('./app');
 const { testConnection, syncDatabase } = require('./db');
+const { Usuario, Publicacion, Comentario } = require('./models');
 
 const PORT = process.env.PORT || 3000;
 
