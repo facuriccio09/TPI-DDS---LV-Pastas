@@ -1,37 +1,68 @@
 const Usuario = require('./Usuario');
 const Publicacion = require('./Publicacion');
 const Comentario = require('./Comentario');
+const Categoria = require('./Categoria');
+const Ingrediente = require('./Ingrediente');
+const PublicacionIngrediente = require('./PublicacionIngrediente');
 
 // Definir relaciones entre modelos
 
-// Un Usuario puede tener muchos Comentarios
+// Relaciones Usuario - Comentario
 Usuario.hasMany(Comentario, {
   foreignKey: 'usuarioId',
   as: 'comentarios',
   onDelete: 'CASCADE'
 });
 
-// Un Comentario pertenece a un Usuario
 Comentario.belongsTo(Usuario, {
   foreignKey: 'usuarioId',
   as: 'usuario'
 });
 
-// Una Publicacion puede tener muchos Comentarios
+// Relaciones Publicacion - Comentario
 Publicacion.hasMany(Comentario, {
   foreignKey: 'publicacionId',
   as: 'comentarios',
   onDelete: 'CASCADE'
 });
 
-// Un Comentario pertenece a una Publicacion
 Comentario.belongsTo(Publicacion, {
   foreignKey: 'publicacionId',
   as: 'publicacion'
 });
 
+// Relaciones Categoria - Publicacion
+Categoria.hasMany(Publicacion, {
+  foreignKey: 'categoriaId',
+  as: 'publicaciones',
+  onDelete: 'SET NULL'
+});
+
+Publicacion.belongsTo(Categoria, {
+  foreignKey: 'categoriaId',
+  as: 'categoriaInfo'
+});
+
+// Relaciones Publicacion - Ingrediente (Muchos a Muchos)
+Publicacion.belongsToMany(Ingrediente, {
+  through: PublicacionIngrediente,
+  foreignKey: 'publicacionId',
+  otherKey: 'ingredienteId',
+  as: 'ingredientesDetalle'
+});
+
+Ingrediente.belongsToMany(Publicacion, {
+  through: PublicacionIngrediente,
+  foreignKey: 'ingredienteId',
+  otherKey: 'publicacionId',
+  as: 'publicaciones'
+});
+
 module.exports = {
   Usuario,
   Publicacion,
-  Comentario
+  Comentario,
+  Categoria,
+  Ingrediente,
+  PublicacionIngrediente
 };

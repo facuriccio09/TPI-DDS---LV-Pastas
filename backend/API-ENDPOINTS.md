@@ -631,6 +631,190 @@ curl -X POST http://localhost:3000/api/comentarios \
 
 ---
 
+## 📁 Endpoints de Categorías
+
+### 1. Obtener todas las Categorías
+**GET** `/api/categorias`
+
+**Query Parameters**:
+- `activo` (opcional): `true` o `false`
+
+**Respuesta (200)**:
+```json
+{
+  "total": 4,
+  "categorias": [
+    {
+      "id": 1,
+      "nombre": "Pastas Rellenas",
+      "descripcion": "Pastas artesanales rellenas...",
+      "activo": true,
+      "publicaciones": [
+        {
+          "id": 1,
+          "nombre": "Ravioles",
+          "precio": "5800.00",
+          "disponible": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 2. Obtener una Categoría por ID
+**GET** `/api/categorias/:id`
+
+**Respuesta (200)**:
+```json
+{
+  "id": 1,
+  "nombre": "Pastas Rellenas",
+  "descripcion": "Pastas artesanales rellenas...",
+  "activo": true,
+  "publicaciones": [...]
+}
+```
+
+### 3. Crear Categoría (Admin)
+**POST** `/api/categorias`  
+**Requiere**: Token de Admin
+
+**Body**:
+```json
+{
+  "nombre": "Pizzas",
+  "descripcion": "Pizzas artesanales a la piedra",
+  "activo": true
+}
+```
+
+### 4. Actualizar Categoría (Admin)
+**PUT** `/api/categorias/:id`  
+**Requiere**: Token de Admin
+
+**Body**:
+```json
+{
+  "nombre": "Pastas Premium",
+  "descripcion": "Nueva descripción",
+  "activo": true
+}
+```
+
+### 5. Eliminar Categoría (Admin)
+**DELETE** `/api/categorias/:id`  
+**Requiere**: Token de Admin
+
+### 6. Activar/Desactivar Categoría (Admin)
+**PATCH** `/api/categorias/:id/toggle`  
+**Requiere**: Token de Admin
+
+---
+
+## 🥬 Endpoints de Ingredientes
+
+### 1. Obtener todos los Ingredientes
+**GET** `/api/ingredientes`
+
+**Query Parameters**:
+- `esAlergeno` (opcional): `true` o `false`
+
+**Respuesta (200)**:
+```json
+{
+  "total": 19,
+  "ingredientes": [
+    {
+      "id": 1,
+      "nombre": "Harina 000",
+      "esAlergeno": true,
+      "descripcion": "Harina de trigo refinada"
+    }
+  ]
+}
+```
+
+### 2. Obtener un Ingrediente por ID
+**GET** `/api/ingredientes/:id`
+
+**Respuesta (200)**:
+```json
+{
+  "id": 1,
+  "nombre": "Harina 000",
+  "esAlergeno": true,
+  "descripcion": "Harina de trigo refinada",
+  "publicaciones": [
+    {
+      "id": 1,
+      "nombre": "Ravioles",
+      "precio": "5800.00",
+      "PublicacionIngrediente": {
+        "cantidad": "500g"
+      }
+    }
+  ]
+}
+```
+
+### 3. Obtener solo Alérgenos
+**GET** `/api/ingredientes/alergenos/lista`
+
+**Respuesta (200)**:
+```json
+{
+  "total": 6,
+  "alergenos": [
+    {
+      "id": 1,
+      "nombre": "Harina 000",
+      "esAlergeno": true,
+      "descripcion": "Harina de trigo refinada"
+    }
+  ]
+}
+```
+
+### 4. Crear Ingrediente (Admin)
+**POST** `/api/ingredientes`  
+**Requiere**: Token de Admin
+
+**Body**:
+```json
+{
+  "nombre": "Orégano",
+  "esAlergeno": false,
+  "descripcion": "Orégano seco italiano"
+}
+```
+
+### 5. Actualizar Ingrediente (Admin)
+**PUT** `/api/ingredientes/:id`  
+**Requiere**: Token de Admin
+
+### 6. Eliminar Ingrediente (Admin)
+**DELETE** `/api/ingredientes/:id`  
+**Requiere**: Token de Admin
+
+### 7. Asociar Ingrediente a Publicación (Admin)
+**POST** `/api/ingredientes/:id/publicaciones`  
+**Requiere**: Token de Admin
+
+**Body**:
+```json
+{
+  "publicacionId": 1,
+  "cantidad": "500g"
+}
+```
+
+### 8. Desasociar Ingrediente de Publicación (Admin)
+**DELETE** `/api/ingredientes/:id/publicaciones/:publicacionId`  
+**Requiere**: Token de Admin
+
+---
+
 ## ⚠️ Códigos de Error Comunes
 
 - `400 Bad Request` - Datos inválidos o faltantes
@@ -650,8 +834,11 @@ curl -X POST http://localhost:3000/api/comentarios \
 4. **Soft Delete**: Los usuarios se desactivan en lugar de eliminarse
 5. **Calificaciones**: Deben ser entre 1 y 5
 6. **Relaciones**: Al eliminar una publicación, se eliminan sus comentarios
+7. **Categorías**: Las publicaciones pueden tener una categoría asignada
+8. **Ingredientes**: Se pueden marcar como alérgenos para filtrado
+9. **Asociaciones**: Los ingredientes se relacionan con publicaciones mediante tabla intermedia
 
 ---
 
-**Fecha de actualización**: 5 de noviembre de 2025  
-**Versión de la API**: 1.0.0
+**Fecha de actualización**: 6 de noviembre de 2025  
+**Versión de la API**: 2.0.0

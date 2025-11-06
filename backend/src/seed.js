@@ -7,7 +7,7 @@
 
 require('dotenv').config();
 const { sequelize } = require('./db');
-const { Usuario, Publicacion, Comentario } = require('./models');
+const { Usuario, Publicacion, Comentario, Categoria, Ingrediente, PublicacionIngrediente } = require('./models');
 
 // Datos de usuarios de prueba
 const usuarios = [
@@ -59,6 +59,53 @@ const usuarios = [
     password: '123456',
     rol: 'usuario'
   }
+];
+
+// Categorías de productos
+const categorias = [
+  {
+    nombre: 'Pastas Rellenas',
+    descripcion: 'Pastas artesanales rellenas con diferentes variedades de rellenos caseros',
+    activo: true
+  },
+  {
+    nombre: 'Pastas Frescas',
+    descripcion: 'Pastas frescas simples elaboradas diariamente con ingredientes de primera calidad',
+    activo: true
+  },
+  {
+    nombre: 'Salsas',
+    descripcion: 'Salsas caseras preparadas con recetas tradicionales italianas',
+    activo: true
+  },
+  {
+    nombre: 'Ñoquis',
+    descripcion: 'Ñoquis de papa artesanales siguiendo la receta de la nonna',
+    activo: true
+  }
+];
+
+// Ingredientes comunes
+const ingredientes = [
+  { nombre: 'Harina 000', esAlergeno: true, descripcion: 'Harina de trigo refinada' },
+  { nombre: 'Huevos frescos', esAlergeno: true, descripcion: 'Huevos de granja' },
+  { nombre: 'Sal', esAlergeno: false, descripcion: 'Sal marina fina' },
+  { nombre: 'Aceite de oliva', esAlergeno: false, descripcion: 'Aceite de oliva virgen extra' },
+  { nombre: 'Ricota', esAlergeno: true, descripcion: 'Queso ricota fresco' },
+  { nombre: 'Queso rallado', esAlergeno: true, descripcion: 'Mezcla de quesos duros rallados' },
+  { nombre: 'Espinaca', esAlergeno: false, descripcion: 'Espinaca fresca' },
+  { nombre: 'Carne picada', esAlergeno: false, descripcion: 'Carne vacuna picada magra' },
+  { nombre: 'Pollo', esAlergeno: false, descripcion: 'Pechuga de pollo' },
+  { nombre: 'Jamón', esAlergeno: false, descripcion: 'Jamón cocido' },
+  { nombre: 'Verduras', esAlergeno: false, descripcion: 'Mezcla de verduras frescas' },
+  { nombre: 'Tomate', esAlergeno: false, descripcion: 'Tomate perita maduro' },
+  { nombre: 'Cebolla', esAlergeno: false, descripcion: 'Cebolla blanca' },
+  { nombre: 'Ajo', esAlergeno: false, descripcion: 'Ajo fresco' },
+  { nombre: 'Albahaca', esAlergeno: false, descripcion: 'Albahaca fresca' },
+  { nombre: 'Papa', esAlergeno: false, descripcion: 'Papa blanca para ñoquis' },
+  { nombre: 'Manteca', esAlergeno: true, descripcion: 'Manteca de primera calidad' },
+  { nombre: 'Nuez moscada', esAlergeno: false, descripcion: 'Nuez moscada molida' },
+  { nombre: 'Semola', esAlergeno: true, descripcion: 'Sémola de trigo duro' }
 ];
 
 // Productos basados en la imagen de precios de La Vesubiana
@@ -394,11 +441,107 @@ async function seed() {
     });
     console.log(`✓ ${usuariosCreados.length} usuarios creados\n`);
 
+    // Crear categorías
+    console.log('📁 Creando categorías...');
+    const categoriasCreadas = await Categoria.bulkCreate(categorias);
+    console.log(`✓ ${categoriasCreadas.length} categorías creadas\n`);
+
+    // Crear ingredientes
+    console.log('🥬 Creando ingredientes...');
+    const ingredientesCreados = await Ingrediente.bulkCreate(ingredientes);
+    console.log(`✓ ${ingredientesCreados.length} ingredientes creados\n`);
+
+    // Asignar categorías a las publicaciones existentes
+    const categoriasPorNombre = {};
+    categoriasCreadas.forEach(cat => {
+      categoriasPorNombre[cat.nombre] = cat.id;
+    });
+
+    // Actualizar publicaciones con categoriaId
+    publicaciones.forEach(pub => {
+      if (pub.categoria && categoriasPorNombre[pub.categoria]) {
+        pub.categoriaId = categoriasPorNombre[pub.categoria];
+      }
+    });
+
+    salsas.forEach(salsa => {
+      if (categoriasPorNombre['Salsas']) {
+        salsa.categoriaId = categoriasPorNombre['Salsas'];
+      }
+    });
+
     // Crear publicaciones (productos)
     console.log('🍝 Creando productos de pastas...');
     const todasPublicaciones = [...publicaciones, ...salsas];
     const publicacionesCreadas = await Publicacion.bulkCreate(todasPublicaciones);
     console.log(`✓ ${publicacionesCreadas.length} productos creados\n`);
+
+    // Asociar ingredientes a publicaciones (ejemplo para los primeros productos)
+    console.log('🔗 Asociando ingredientes a productos...');
+    const asociaciones = [];
+    
+    // Ravioles - ingredientes básicos
+    const ravioles = publicacionesCreadas.find(p => p.nombre === 'Ravioles');
+    if (ravioles) {
+      const ingredientesRavioles = ['Harina 000', 'Huevos frescos', 'Sal', 'Ricota', 'Queso rallado'];
+      for (const ingNombre of ingredientesRavioles) {
+        const ing = ingredientesCreados.find(i => i.nombre === ingNombre);
+        if (ing) {
+          asociaciones.push({
+            publicacionId: ravioles.id,
+            ingredienteId: ing.id
+          });
+        }
+      }
+    }
+
+    // Capeletis
+    const capeletis = publicacionesCreadas.find(p => p.nombre === 'Capeletis');
+    if (capeletis) {
+      const ingredientesCapeletis = ['Harina 000', 'Huevos frescos', 'Sal', 'Carne picada', 'Verduras'];
+      for (const ingNombre of ingredientesCapeletis) {
+        const ing = ingredientesCreados.find(i => i.nombre === ingNombre);
+        if (ing) {
+          asociaciones.push({
+            publicacionId: capeletis.id,
+            ingredienteId: ing.id
+          });
+        }
+      }
+    }
+
+    // Ñoquis
+    const noquis = publicacionesCreadas.find(p => p.nombre === 'Ñoquis');
+    if (noquis) {
+      const ingredientesNoquis = ['Papa', 'Harina 000', 'Huevos frescos', 'Sal', 'Nuez moscada'];
+      for (const ingNombre of ingredientesNoquis) {
+        const ing = ingredientesCreados.find(i => i.nombre === ingNombre);
+        if (ing) {
+          asociaciones.push({
+            publicacionId: noquis.id,
+            ingredienteId: ing.id
+          });
+        }
+      }
+    }
+
+    // Salsa Bolognesa
+    const bolognesa = publicacionesCreadas.find(p => p.nombre === 'Salsa Bolognesa');
+    if (bolognesa) {
+      const ingredientesBolognesa = ['Tomate', 'Carne picada', 'Cebolla', 'Ajo', 'Albahaca'];
+      for (const ingNombre of ingredientesBolognesa) {
+        const ing = ingredientesCreados.find(i => i.nombre === ingNombre);
+        if (ing) {
+          asociaciones.push({
+            publicacionId: bolognesa.id,
+            ingredienteId: ing.id
+          });
+        }
+      }
+    }
+
+    await PublicacionIngrediente.bulkCreate(asociaciones);
+    console.log(`✓ ${asociaciones.length} asociaciones de ingredientes creadas\n`);
 
     // Crear comentarios aleatorios
     console.log('💬 Creando comentarios...');
@@ -430,13 +573,17 @@ async function seed() {
 
     // Resumen
     console.log('📊 RESUMEN:\n');
-    console.log(`   Usuarios:        ${usuariosCreados.length}`);
-    console.log(`   - Admin:         1`);
-    console.log(`   - Usuarios:      ${usuariosCreados.length - 1}`);
-    console.log(`   Productos:       ${publicacionesCreadas.length}`);
-    console.log(`   - Pastas:        ${publicaciones.length}`);
-    console.log(`   - Salsas:        ${salsas.length}`);
-    console.log(`   Comentarios:     ${comentariosCreados.length}\n`);
+    console.log(`   Usuarios:             ${usuariosCreados.length}`);
+    console.log(`   - Admin:              1`);
+    console.log(`   - Usuarios:           ${usuariosCreados.length - 1}`);
+    console.log(`   Categorías:           ${categoriasCreadas.length}`);
+    console.log(`   Ingredientes:         ${ingredientesCreados.length}`);
+    console.log(`   - Alérgenos:          ${ingredientesCreados.filter(i => i.esAlergeno).length}`);
+    console.log(`   Productos:            ${publicacionesCreadas.length}`);
+    console.log(`   - Pastas:             ${publicaciones.length}`);
+    console.log(`   - Salsas:             ${salsas.length}`);
+    console.log(`   Asociaciones:         ${asociaciones.length}`);
+    console.log(`   Comentarios:          ${comentariosCreados.length}\n`);
 
     // Mostrar credenciales de acceso
     console.log('🔑 CREDENCIALES DE ACCESO:\n');

@@ -74,6 +74,16 @@ const Publicacion = sequelize.define('Publicacion', {
       }
     }
   },
+  categoriaId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'categorias',
+      key: 'id'
+    },
+    comment: 'Referencia a la tabla de categorías'
+  },
+  // Mantener categoria como string para retrocompatibilidad
   categoria: {
     type: DataTypes.STRING,
     allowNull: true,

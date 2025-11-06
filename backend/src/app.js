@@ -13,21 +13,27 @@ app.use(express.urlencoded({ extended: true }));
 const usuariosRoutes = require('./routes/usuarios.routes');
 const publicacionesRoutes = require('./routes/publicaciones.routes');
 const comentariosRoutes = require('./routes/comentarios.routes');
+const categoriasRoutes = require('./routes/categorias.routes');
+const ingredientesRoutes = require('./routes/ingredientes.routes');
 
 // Usar rutas
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/publicaciones', publicacionesRoutes);
 app.use('/api/comentarios', comentariosRoutes);
+app.use('/api/categorias', categoriasRoutes);
+app.use('/api/ingredientes', ingredientesRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Bienvenido a la API de L.V Pastas Frescas',
-    version: '1.0.0',
+    version: '2.0.0',
     endpoints: {
       usuarios: '/api/usuarios',
       publicaciones: '/api/publicaciones',
-      comentarios: '/api/comentarios'
+      comentarios: '/api/comentarios',
+      categorias: '/api/categorias',
+      ingredientes: '/api/ingredientes'
     }
   });
 });
