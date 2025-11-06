@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Publicacion, Comentario, Usuario } = require('../models');
+const { Publicacion, Comentario, Usuario, Categoria, Ingrediente } = require('../models');
 const { verificarToken, esAdmin } = require('../middlewares/auth');
 
 // GET /api/publicaciones - Obtener todas las publicaciones (público)
@@ -58,16 +58,29 @@ router.get('/:id', async (req, res, next) => {
     const { id } = req.params;
 
     const publicacion = await Publicacion.findByPk(id, {
-      include: [{
-        model: Comentario,
-        as: 'comentarios',
-        include: [{
-          model: Usuario,
-          as: 'usuario',
-          attributes: ['id', 'nombre']
-        }],
-        order: [['createdAt', 'DESC']]
-      }]
+      include: [
+        {
+          model: Comentario,
+          as: 'comentarios',
+          include: [{
+            model: Usuario,
+            as: 'usuario',
+            attributes: ['id', 'nombre']
+          }],
+          order: [['createdAt', 'DESC']]
+        },
+        {
+          model: Categoria,
+          as: 'categoriaInfo',
+          attributes: ['id', 'nombre', 'descripcion']
+        },
+        {
+          model: Ingrediente,
+          as: 'ingredientesDetalle',
+          through: { attributes: ['cantidad'] },
+          attributes: ['id', 'nombre', 'esAlergeno', 'descripcion']
+        }
+      ]
     });
 
     if (!publicacion) {

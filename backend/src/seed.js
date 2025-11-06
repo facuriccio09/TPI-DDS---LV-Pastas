@@ -69,20 +69,21 @@ const categorias = [
     activo: true
   },
   {
-    nombre: 'Pastas Frescas',
+    nombre: 'Pastas Sin Relleno',
     descripcion: 'Pastas frescas simples elaboradas diariamente con ingredientes de primera calidad',
+    activo: true
+  },
+  {
+    nombre: 'Tapas y Masas',
+    descripcion: 'Deliciosas tapas y masas para compartir en cualquier ocasión',
     activo: true
   },
   {
     nombre: 'Salsas',
     descripcion: 'Salsas caseras preparadas con recetas tradicionales italianas',
     activo: true
-  },
-  {
-    nombre: 'Ñoquis',
-    descripcion: 'Ñoquis de papa artesanales siguiendo la receta de la nonna',
-    activo: true
   }
+  
 ];
 
 // Ingredientes comunes
@@ -129,7 +130,7 @@ const publicaciones = [
   },
   {
     nombre: 'Sorrentinos',
-    descripcion: 'Clásicos sorrentinos con la receta tradicional de La Vesubiana. Pasta fresca rellena con la mejor calidad.',
+    descripcion: 'Clásicos sorrentinos con la receta tradicional de La Vesubiana. Pasta fresca rellena de forma redonda con la mejor calidad.',
     precio: 6800.00,
     ingredientes: 'Harina 000, Huevos frescos, Mozzarella, Jamón, Especies aromáticas',
     variantes: [],
@@ -140,11 +141,11 @@ const publicaciones = [
   },
   {
     nombre: 'Panzottis',
-    descripcion: 'Panzottis artesanales, una delicia italiana con el sello de calidad de La Vesubiana.',
+    descripcion: 'Panzottis artesanales, ravioles de gran tamaño con el sello de calidad de La Vesubiana.',
     precio: 7500.00,
     ingredientes: 'Harina 000, Huevos frescos, Ricota, Espinaca, Nuez moscada, Parmesano',
     variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1595295333158-4742f28fbd85?w=800',
+    imagen: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800',
     categoria: 'Pastas Rellenas',
     disponible: true,
     destacado: false
@@ -155,8 +156,8 @@ const publicaciones = [
     precio: 6400.00,
     ingredientes: 'Papa, Harina 000, Huevo, Sal',
     variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800',
-    categoria: 'Pastas',
+    imagen: 'https://images.unsplash.com/photo-1611180011110-37e1b5c2c4d5?w=800',
+    categoria: 'Pastas Sin Relleno',
     disponible: true,
     destacado: true
   },
@@ -170,8 +171,8 @@ const publicaciones = [
       'De Espinaca',
       'De Morrón'
     ],
-    imagen: 'https://images.unsplash.com/photo-1611599537984-5dc1f3e5e70d?w=800',
-    categoria: 'Pastas',
+    imagen: 'https://images.unsplash.com/photo-1621947081720-86970823b77a?w=800',
+    categoria: 'Pastas Sin Relleno',
     disponible: true,
     destacado: false
   },
@@ -181,25 +182,25 @@ const publicaciones = [
     precio: 1500.00,
     ingredientes: 'Harina, Grasa, Sal, Agua',
     variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800',
+    imagen: 'https://images.unsplash.com/photo-1624726175512-19b9baf9fbd1?w=800',
     categoria: 'Tapas y Masas',
     disponible: true,
     destacado: false
   },
   {
     nombre: 'Discos para Empanadas Árabes',
-    descripcion: 'Discos de masa para empanadas árabes, perfectos para preparaciones al horno.',
+    descripcion: 'Discos de masa para empanadas árabes triangulares, perfectos para preparaciones al horno.',
     precio: 1700.00,
     ingredientes: 'Harina, Aceite, Sal, Agua',
     variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1615991893370-fb356f6d50b2?w=800',
+    imagen: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800',
     categoria: 'Tapas y Masas',
     disponible: true,
     destacado: false
   },
   {
     nombre: 'Pascualinas',
-    descripcion: 'Masa para pascualinas, ideal para preparar esta tradicional tarta.',
+    descripcion: 'Masa para pascualinas, ideal para preparar esta tradicional tarta argentina.',
     precio: 2700.00,
     ingredientes: 'Harina 000, Aceite, Sal, Agua',
     variantes: [],
@@ -209,45 +210,23 @@ const publicaciones = [
     destacado: false
   },
   {
-    nombre: 'Copetín',
-    descripcion: 'Masa para copetín por 24 unidades. Perfecta para aperitivos y eventos.',
+    nombre: 'Discos para Empanadas Copetín',
+    descripcion: 'Discos para empanadas copetín por 24 unidades. Empanadas pequeñas perfectas para aperitivos y eventos.',
     precio: 2500.00,
     ingredientes: 'Harina, Manteca, Sal',
     variantes: [],
     imagen: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
-    categoria: 'Tapas y Masas',
+    categoria: 'Masas y Tapas',
     disponible: true,
     destacado: false
   },
   {
     nombre: 'Pastelitos',
-    descripcion: 'Masa para pastelitos, ideal para preparar dulces o salados.',
+    descripcion: 'Masa para pastelitos tradicionales argentinos, ideal para preparar dulces o salados.',
     precio: 2800.00,
     ingredientes: 'Harina, Grasa, Sal, Agua',
     variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1612419656484-c596e6dbf0c3?w=800',
-    categoria: 'Tapas y Masas',
-    disponible: true,
-    destacado: false
-  },
-  {
-    nombre: 'Capellettis',
-    descripcion: 'Capellettis tradicionales rellenos, perfectos para caldos y sopas.',
-    precio: 6400.00,
-    ingredientes: 'Harina 000, Huevos, Carne, Queso, Especies',
-    variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=800',
-    categoria: 'Pastas Rellenas',
-    disponible: true,
-    destacado: false
-  },
-  {
-    nombre: 'Tarttelettis',
-    descripcion: 'Masa para tarttelettis, ideal para preparar pequeñas tartas y bocaditos.',
-    precio: 6400.00,
-    ingredientes: 'Harina, Manteca, Azúcar, Huevo',
-    variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800',
+    imagen: 'https://images.unsplash.com/photo-1558326567-98ae2405596b?w=800',
     categoria: 'Tapas y Masas',
     disponible: true,
     destacado: false
@@ -259,7 +238,7 @@ const publicaciones = [
     ingredientes: 'Harina 000, Huevos frescos, Sal, Aceite',
     variantes: [],
     imagen: 'https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=800',
-    categoria: 'Pastas',
+    categoria: 'Tapas y Masas',
     disponible: true,
     destacado: false
   },
@@ -269,8 +248,8 @@ const publicaciones = [
     precio: 6000.00,
     ingredientes: 'Harina 000, Huevos frescos, Sal',
     variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800',
-    categoria: 'Pastas',
+    imagen: 'https://images.unsplash.com/photo-1633964913295-ceb43826a270?w=800',
+    categoria: 'Pastas Rellenas',
     disponible: true,
     destacado: false
   }
@@ -279,30 +258,8 @@ const publicaciones = [
 // Salsas disponibles
 const salsas = [
   {
-    nombre: 'Salsa Crema',
-    descripcion: 'Salsa crema tradicional, suave y deliciosa para acompañar tus pastas.',
-    precio: 3000.00,
-    ingredientes: 'Crema de leche, Manteca, Sal, Nuez moscada',
-    variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=800',
-    categoria: 'Salsas',
-    disponible: true,
-    destacado: false
-  },
-  {
-    nombre: 'Salsa Queso',
-    descripcion: 'Salsa de queso cremosa, perfecta para pastas y gratinados.',
-    precio: 2800.00,
-    ingredientes: 'Queso, Crema de leche, Manteca, Leche',
-    variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1616803689943-5601631c7fec?w=800',
-    categoria: 'Salsas',
-    disponible: true,
-    destacado: false
-  },
-  {
-    nombre: 'Salsa Tomate',
-    descripcion: 'Salsa de tomate casera con el sabor tradicional de La Vesubiana.',
+    nombre: 'Salsa de Tomate',
+    descripcion: 'Salsa de tomate estilo Arcor / Knorr, clásica y tradicional.',
     precio: 1700.00,
     ingredientes: 'Tomate, Cebolla, Ajo, Aceite de oliva, Albahaca',
     variantes: [],
@@ -313,33 +270,11 @@ const salsas = [
   },
   {
     nombre: 'Salsa Tritu',
-    descripcion: 'Salsa de tomate triturado, base perfecta para tus preparaciones.',
+    descripcion: 'Tomate triturado en botella, base perfecta para tus preparaciones.',
     precio: 2600.00,
     ingredientes: 'Tomate triturado, Aceite, Sal, Especies',
     variantes: [],
     imagen: 'https://images.unsplash.com/photo-1608616955325-6d0de27b4948?w=800',
-    categoria: 'Salsas',
-    disponible: true,
-    destacado: false
-  },
-  {
-    nombre: 'Salsa Puré',
-    descripcion: 'Puré de tomate concentrado para salsas y guisos.',
-    precio: 1500.00,
-    ingredientes: 'Tomate concentrado, Sal',
-    variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1572453800999-e8d2d1589b7c?w=800',
-    categoria: 'Salsas',
-    disponible: true,
-    destacado: false
-  },
-  {
-    nombre: 'Salsa Roja',
-    descripcion: 'Salsa roja preparada, lista para servir con tus pastas favoritas.',
-    precio: 1700.00,
-    ingredientes: 'Tomate, Cebolla, Ajo, Aceite, Especies',
-    variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1627662168835-7b9c59682c7d?w=800',
     categoria: 'Salsas',
     disponible: true,
     destacado: false
@@ -350,7 +285,7 @@ const salsas = [
     precio: 4500.00,
     ingredientes: 'Tomate, Carne molida, Cebolla, Ajo, Vino, Especies',
     variantes: [],
-    imagen: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=800',
+    imagen: 'https://images.unsplash.com/photo-1627662168835-7b9c59682c7d?w=800',
     categoria: 'Salsas',
     disponible: true,
     destacado: true
@@ -476,7 +411,7 @@ async function seed() {
     const publicacionesCreadas = await Publicacion.bulkCreate(todasPublicaciones);
     console.log(`✓ ${publicacionesCreadas.length} productos creados\n`);
 
-    // Asociar ingredientes a publicaciones (ejemplo para los primeros productos)
+    // Asociar ingredientes a publicaciones
     console.log('🔗 Asociando ingredientes a productos...');
     const asociaciones = [];
     
@@ -495,15 +430,30 @@ async function seed() {
       }
     }
 
-    // Capeletis
-    const capeletis = publicacionesCreadas.find(p => p.nombre === 'Capeletis');
-    if (capeletis) {
-      const ingredientesCapeletis = ['Harina 000', 'Huevos frescos', 'Sal', 'Carne picada', 'Verduras'];
-      for (const ingNombre of ingredientesCapeletis) {
+    // Sorrentinos
+    const sorrentinos = publicacionesCreadas.find(p => p.nombre === 'Sorrentinos');
+    if (sorrentinos) {
+      const ingredientesSorrentinos = ['Harina 000', 'Huevos frescos', 'Sal', 'Ricota', 'Jamón'];
+      for (const ingNombre of ingredientesSorrentinos) {
         const ing = ingredientesCreados.find(i => i.nombre === ingNombre);
         if (ing) {
           asociaciones.push({
-            publicacionId: capeletis.id,
+            publicacionId: sorrentinos.id,
+            ingredienteId: ing.id
+          });
+        }
+      }
+    }
+
+    // Panzottis
+    const panzottis = publicacionesCreadas.find(p => p.nombre === 'Panzottis');
+    if (panzottis) {
+      const ingredientesPanzottis = ['Harina 000', 'Huevos frescos', 'Sal', 'Ricota', 'Espinaca'];
+      for (const ingNombre of ingredientesPanzottis) {
+        const ing = ingredientesCreados.find(i => i.nombre === ingNombre);
+        if (ing) {
+          asociaciones.push({
+            publicacionId: panzottis.id,
             ingredienteId: ing.id
           });
         }
@@ -525,15 +475,30 @@ async function seed() {
       }
     }
 
-    // Salsa Bolognesa
-    const bolognesa = publicacionesCreadas.find(p => p.nombre === 'Salsa Bolognesa');
-    if (bolognesa) {
-      const ingredientesBolognesa = ['Tomate', 'Carne picada', 'Cebolla', 'Ajo', 'Albahaca'];
-      for (const ingNombre of ingredientesBolognesa) {
+    // Tallarines
+    const tallarines = publicacionesCreadas.find(p => p.nombre === 'Tallarines');
+    if (tallarines) {
+      const ingredientesTallarines = ['Harina 000', 'Huevos frescos', 'Sal', 'Aceite de oliva'];
+      for (const ingNombre of ingredientesTallarines) {
         const ing = ingredientesCreados.find(i => i.nombre === ingNombre);
         if (ing) {
           asociaciones.push({
-            publicacionId: bolognesa.id,
+            publicacionId: tallarines.id,
+            ingredienteId: ing.id
+          });
+        }
+      }
+    }
+
+    // Salsa Casera
+    const salsaCasera = publicacionesCreadas.find(p => p.nombre === 'Salsa Casera');
+    if (salsaCasera) {
+      const ingredientesSalsaCasera = ['Tomate', 'Carne picada', 'Cebolla', 'Ajo', 'Albahaca'];
+      for (const ingNombre of ingredientesSalsaCasera) {
+        const ing = ingredientesCreados.find(i => i.nombre === ingNombre);
+        if (ing) {
+          asociaciones.push({
+            publicacionId: salsaCasera.id,
             ingredienteId: ing.id
           });
         }
