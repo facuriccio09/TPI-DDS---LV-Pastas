@@ -6,6 +6,7 @@ import { getComentariosByPublicacion } from '../services/comentarioService';
 import './ProductDetail.css';
 
 const ProductDetail = () => {
+  const PLACEHOLDER_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect width='100%' height='100%' fill='%23f8f9fa'/><text x='50%' y='50%' fill='%23999' font-size='24' dominant-baseline='middle' text-anchor='middle'>Sin imagen</text></svg>";
   const { id } = useParams();
   const navigate = useNavigate();
   const [producto, setProducto] = useState(null);
@@ -23,6 +24,7 @@ const ProductDetail = () => {
       setLoading(true);
       setError(null);
       const data = await getPublicacionById(id);
+      console.log('getPublicacionById response:', data);
       setProducto(data);
     } catch (err) {
       setError('Error al cargar el producto');
@@ -35,6 +37,7 @@ const ProductDetail = () => {
   const cargarComentarios = async () => {
     try {
       const data = await getComentariosByPublicacion(id);
+      console.log('getComentariosByPublicacion response:', data);
       setComentarios(data);
     } catch (err) {
       console.error('Error al cargar comentarios:', err);
@@ -42,9 +45,22 @@ const ProductDetail = () => {
   };
 
   const calcularPromedioCalificacion = () => {
-    if (comentarios.length === 0) return 0;
-    const suma = comentarios.reduce((acc, com) => acc + com.calificacion, 0);
-    return (suma / comentarios.length).toFixed(1);
+    const valid = comentarios.filter(c => c && typeof c.calificacion === 'number');
+    if (valid.length === 0) return 0;
+    const suma = valid.reduce((acc, com) => acc + com.calificacion, 0);
+    // devolver número (no string) para que Math.round y otras operaciones funcionen correctamente
+    return parseFloat((suma / valid.length).toFixed(1));
+  };
+
+  const formatFecha = (dateString) => {
+    if (!dateString) return 'Fecha no disponible';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return 'Fecha no disponible';
+    return d.toLocaleDateString('es-AR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   const renderEstrellas = (calificacion) => {
@@ -82,7 +98,7 @@ const ProductDetail = () => {
     <div className="product-detail-page">
       {/* Header del producto */}
       <div className="product-header">
-        <Container>
+        <Container fluid>
           <button className="btn-back" onClick={() => navigate('/productos')}>
             ← Volver a productos
           </button>
@@ -90,20 +106,15 @@ const ProductDetail = () => {
       </div>
 
       <Container className="py-5">
-        <Row>
+  <Row className="product-row">
           {/* Imagen del producto */}
           <Col lg={6} className="mb-4">
             <div className="product-image-container">
-              <img 
-                src={producto.imagen} 
-                alt={producto.nombre}
+              <img
+                src={producto.imagen || PLACEHOLDER_IMAGE}
+                alt={producto.nombre || 'Producto'}
                 className="product-image"
               />
-              {producto.destacado && (
-                <Badge bg="warning" text="dark" className="badge-destacado">
-                  ⭐ Destacado
-                </Badge>
-              )}
               {!producto.disponible && (
                 <Badge bg="danger" className="badge-no-disponible">
                   No disponible
@@ -115,6 +126,11 @@ const ProductDetail = () => {
           {/* Información del producto */}
           <Col lg={6}>
             <div className="product-info">
+              {producto.destacado && (
+                <Badge bg="warning" text="dark" className="badge-destacado">
+                  Destacado
+                </Badge>
+              )}
               <h1 className="product-name">{producto.nombre}</h1>
               
               {producto.categoriaInfo && (
@@ -134,7 +150,7 @@ const ProductDetail = () => {
               </div>
 
               <div className="product-price">
-                ${producto.precio.toLocaleString('es-AR')}
+                ${producto.precio != null ? producto.precio.toLocaleString('es-AR') : '—'}
               </div>
 
               <div className="product-description">
@@ -164,19 +180,11 @@ const ProductDetail = () => {
               {producto.ingredientesDetalle && producto.ingredientesDetalle.length > 0 && (
                 <div className="product-ingredients-list">
                   <h5>Ingredientes detallados</h5>
-                  <div className="ingredients-tags">
-                    {producto.ingredientesDetalle.map((ing) => (
-                      <Badge 
-                        key={ing.id} 
-                        bg={ing.esAlergeno ? 'danger' : 'secondary'}
-                        className="ingredient-tag"
-                      >
-                        {ing.nombre}
-                        {ing.esAlergeno && ' ⚠️'}
-                        {ing.PublicacionIngrediente?.cantidad && ` (${ing.PublicacionIngrediente.cantidad})`}
-                      </Badge>
-                    ))}
-                  </div>
+                  <p className="ingredients-simple">
+                    {producto.ingredientesDetalle
+                      .map((ing) => `${ing.nombre}${ing.PublicacionIngrediente?.cantidad ? ` (${ing.PublicacionIngrediente.cantidad})` : ''}`)
+                      .join(', ')}
+                  </p>
                 </div>
               )}
             </div>
@@ -210,11 +218,7 @@ const ProductDetail = () => {
                             </div>
                           </div>
                           <small className="review-date text-muted">
-                            {new Date(comentario.createdAt).toLocaleDateString('es-AR', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })}
+                            {formatFecha(comentario.createdAt)}
                           </small>
                         </div>
                         <p className="review-text mt-3">{comentario.texto}</p>

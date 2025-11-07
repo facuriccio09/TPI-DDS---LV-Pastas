@@ -9,7 +9,7 @@ const Navbar = () => {
 
   return (
     <BootstrapNavbar bg="light" expand="lg" sticky="top" className="shadow-sm navbar-custom">
-      <Container>
+      <Container fluid>
         <BootstrapNavbar.Brand as={Link} to="/" className="d-flex align-items-center brand-container">
           <div className="logo-wrapper">
             <img

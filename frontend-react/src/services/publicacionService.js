@@ -11,10 +11,11 @@ export const getPublicaciones = async (params = {}) => {
 };
 
 // Obtener una publicación por ID con comentarios
-export const getPublicacionById = async (id) => {
+export const getPublicacionById = async (id) => { 
   try {
-    const response = await api.get(`/publicaciones/${id}`);
-    return response.data;
+    const response = await api.get(`/publicaciones/${id}`); //GET /api/publicaciones/:id
+    // El backend devuelve { publicacion: {...} }
+    return response.data.publicacion || response.data;
   } catch (error) {
     throw error.response?.data || error;
   }
