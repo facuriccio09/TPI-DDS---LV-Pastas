@@ -2,8 +2,7 @@
 .product-detail-page {
   background-color: #f8f9fa;
   min-height: 100vh;
-  width: 100%; /* Asegura que ocupe todo el contenedor */
-  overflow-x: hidden; /* Previene scroll horizontal */
+  width: 100%;
 }
 
 .product-header {
@@ -31,11 +30,11 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Main product section - CORREGIDO */
+/* CAMBIO: La sección principal ahora tiene el fondo de la página */
 .product-main-section {
   width: 100%;
   padding: 3rem 0;
-  background: white;
+  background: #f8f9fa; /* Fondo gris para que las tarjetas destaquen */
   display: flex;
   justify-content: center;
   align-items: stretch;
@@ -48,18 +47,20 @@
   flex-wrap: wrap;
 }
 
-.product-row.g-0 > * {
-  padding-right: 0;
-  padding-left: 0;
-}
+/* CAMBIO: Se eliminó la regla g-0 que ya no se usa */
 
-/* Image container - CORREGIDO */
-.product-image-container {
+/* CAMBIO: Se renombró de .product-image-container a .product-image-card
+  y se añadieron los estilos de "tarjeta" (sombra, borde, etc.)
+*/
+.product-image-card {
   position: relative;
-  width: 100%;
+  width: 100%; /* Ocupa el 100% de la Col (gracias a d-flex) */
   height: 600px; /* Altura fija para desktop */
   overflow: hidden;
-  background: #f8f9fa;
+  background: white; /* Fondo blanco de la tarjeta */
+  border-radius: 20px; /* Bordes redondeados */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra */
+  border: 1px solid rgba(0,0,0,0.06); /* Borde sutil */
 }
 
 .product-image {
@@ -70,7 +71,7 @@
   transition: transform 0.3s ease;
 }
 
-.product-image-container:hover .product-image {
+.product-image-card:hover .product-image {
   transform: scale(1.05);
 }
 
@@ -96,15 +97,21 @@
   z-index: 5;
 }
 
-/* Product info - CORREGIDO */
-.product-info {
+/* CAMBIO: Se renombró de .product-info a .product-info-card
+  y se añadieron los estilos de "tarjeta".
+*/
+.product-info-card {
   position: relative;
   padding: 3rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 100%; /* Hará que ocupe la misma altura que la imagen */
+  height: 100%; /* Ocupa el 100% de la altura de la Col */
+  width: 100%; /* Ocupa el 100% del ancho de la Col */
   background: white;
+  border-radius: 20px; /* Bordes redondeados */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra */
+  border: 1px solid rgba(0,0,0,0.06); /* Borde sutil */
 }
 
 .product-name {
@@ -227,7 +234,8 @@
   width: 100%;
   padding: 3rem 0;
   background: #f8f9fa;
-  margin-top: 3rem; /* Esto empuja las reseñas hacia abajo */
+  /* CAMBIO: Se eliminó el margin-top, ahora el espaciado
+     lo maneja el g-4 de la Row y el padding de la sección */
   display: flex;
   justify-content: center;
 }
@@ -304,13 +312,13 @@
     flex-direction: column; 
   }
   
-  /* Hacemos que la imagen sea más pequeña en tablet/móvil */
-  .product-image-container {
+  /* CAMBIO: Se renombró la clase */
+  .product-image-card {
     height: 400px;
   }
   
-  /* La info ya no necesita altura fija */
-  .product-info {
+  /* CAMBIO: Se renombró la clase */
+  .product-info-card {
     height: auto;
     padding: 2rem;
   }
@@ -329,11 +337,13 @@
     padding: 2rem 0;
   }
   
-  .product-image-container {
+  /* CAMBIO: Se renombró la clase */
+  .product-image-card {
     height: 300px;
   }
   
-  .product-info {
+  /* CAMBIO: Se renombró la clase */
+  .product-info-card {
     padding: 1.5rem;
   }
 

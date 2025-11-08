@@ -108,10 +108,17 @@ const ProductDetail = () => {
       {/* Main product section - full width */}
       <div className="product-main-section">
         <Container>
-          <Row className="product-row g-0">
-            {/* Imagen del producto */}
-            <Col lg={6} className="mb-4">
-              <div className="product-image-container">
+          {/* CAMBIO: Se reemplazó g-0 por g-4 para que Bootstrap maneje el espaciado (gap) 
+            entre las columnas/tarjetas.
+          */}
+          <Row className="product-row g-4">
+            
+            {/* CAMBIO: Se añadió d-flex para que el contenido (la tarjeta) 
+              pueda estirarse al 100% de la altura de la columna.
+            */}
+            <Col lg={6} className="d-flex">
+              {/* CAMBIO: Se renombró la clase para estilizarla como una tarjeta */}
+              <div className="product-image-card">
                 <img
                   src={producto.imagen || PLACEHOLDER_IMAGE}
                   alt={producto.nombre || 'Producto'}
@@ -125,9 +132,10 @@ const ProductDetail = () => {
               </div>
             </Col>
 
-          {/* Información del producto */}
-          <Col lg={6}>
-            <div className="product-info">
+          {/* CAMBIO: Se añadió d-flex */}
+          <Col lg={6} className="d-flex">
+            {/* CAMBIO: Se renombró la clase para estilizarla como una tarjeta */}
+            <div className="product-info-card">
               {producto.destacado && (
                 <Badge bg="warning" text="dark" className="badge-destacado">
                   Destacado
@@ -199,7 +207,8 @@ const ProductDetail = () => {
       <div className="reviews-full-section">
         <Container>
           <Row className="justify-content-center">
-            <Col lg={10} xl={8}>
+            {/* CAMBIO: Se ajustó el ancho para que coincida con el de las tarjetas de arriba (lg={12}) */}
+            <Col lg={12} xl={10}>
               <div className="reviews-section">
                 <h3 className="reviews-title">
                   Reseñas de clientes ({comentarios.length})
