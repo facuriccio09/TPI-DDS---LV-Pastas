@@ -98,30 +98,32 @@ const ProductDetail = () => {
     <div className="product-detail-page">
       {/* Header del producto */}
       <div className="product-header">
-        <Container fluid>
+        <Container>
           <button className="btn-back" onClick={() => navigate('/productos')}>
             ← Volver a productos
           </button>
         </Container>
       </div>
 
-      <Container className="py-5">
-  <Row className="product-row">
-          {/* Imagen del producto */}
-          <Col lg={6} className="mb-4">
-            <div className="product-image-container">
-              <img
-                src={producto.imagen || PLACEHOLDER_IMAGE}
-                alt={producto.nombre || 'Producto'}
-                className="product-image"
-              />
-              {!producto.disponible && (
-                <Badge bg="danger" className="badge-no-disponible">
-                  No disponible
-                </Badge>
-              )}
-            </div>
-          </Col>
+      {/* Main product section - full width */}
+      <div className="product-main-section">
+        <Container>
+          <Row className="product-row g-0">
+            {/* Imagen del producto */}
+            <Col lg={6} className="mb-4">
+              <div className="product-image-container">
+                <img
+                  src={producto.imagen || PLACEHOLDER_IMAGE}
+                  alt={producto.nombre || 'Producto'}
+                  className="product-image"
+                />
+                {!producto.disponible && (
+                  <Badge bg="danger" className="badge-no-disponible">
+                    No disponible
+                  </Badge>
+                )}
+              </div>
+            </Col>
 
           {/* Información del producto */}
           <Col lg={6}>
@@ -190,47 +192,52 @@ const ProductDetail = () => {
             </div>
           </Col>
         </Row>
+        </Container>
+      </div>
 
-        {/* Sección de reseñas */}
-        <Row className="mt-5">
-          <Col lg={12}>
-            <div className="reviews-section">
-              <h3 className="reviews-title">
-                Reseñas de clientes ({comentarios.length})
-              </h3>
+      {/* Sección de reseñas - full width */}
+      <div className="reviews-full-section">
+        <Container>
+          <Row className="justify-content-center">
+            <Col lg={10} xl={8}>
+              <div className="reviews-section">
+                <h3 className="reviews-title">
+                  Reseñas de clientes ({comentarios.length})
+                </h3>
 
-              {comentarios.length === 0 ? (
-                <Alert variant="info">
-                  Aún no hay reseñas para este producto. ¡Sé el primero en dejar una!
-                </Alert>
-              ) : (
-                <div className="reviews-list">
-                  {comentarios.map((comentario) => (
-                    <Card key={comentario.id} className="review-card mb-3">
-                      <Card.Body>
-                        <div className="review-header">
-                          <div>
-                            <strong className="review-author">
-                              {comentario.usuario?.nombre || 'Usuario'}
-                            </strong>
-                            <div className="review-stars">
-                              {renderEstrellas(comentario.calificacion)}
+                {comentarios.length === 0 ? (
+                  <Alert variant="info">
+                    Aún no hay reseñas para este producto. ¡Sé el primero en dejar una!
+                  </Alert>
+                ) : (
+                  <div className="reviews-list">
+                    {comentarios.map((comentario) => (
+                      <Card key={comentario.id} className="review-card mb-3">
+                        <Card.Body>
+                          <div className="review-header">
+                            <div>
+                              <strong className="review-author">
+                                {comentario.usuario?.nombre || 'Usuario'}
+                              </strong>
+                              <div className="review-stars">
+                                {renderEstrellas(comentario.calificacion)}
+                              </div>
                             </div>
+                            <small className="review-date text-muted">
+                              {formatFecha(comentario.createdAt)}
+                            </small>
                           </div>
-                          <small className="review-date text-muted">
-                            {formatFecha(comentario.createdAt)}
-                          </small>
-                        </div>
-                        <p className="review-text mt-3">{comentario.texto}</p>
-                      </Card.Body>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          </Col>
-        </Row>
-      </Container>
+                          <p className="review-text mt-3">{comentario.texto}</p>
+                        </Card.Body>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      </div>
     </div>
   );
 };
