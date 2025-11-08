@@ -24,8 +24,8 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  /*display: flex;
+  place-items: center;*/ /* Esto es para centrar el logo vite cuando creas directamente el proyecto */ 
   min-width: 320px;
   min-height: 100vh;
 }
