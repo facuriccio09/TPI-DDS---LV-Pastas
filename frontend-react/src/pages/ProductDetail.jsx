@@ -1,18 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Badge, Spinner, Alert, Card } from 'react-bootstrap';
+import { Container, Row, Col, Badge, Spinner, Alert, Card, Button } from 'react-bootstrap';
 import { getPublicacionById } from '../services/publicacionService';
-import { getComentariosByPublicacion } from '../services/comentarioService';
+import { 
+  getComentariosByPublicacion, 
+  createComentario, 
+  updateComentario, 
+  deleteComentario 
+} from '../services/comentarioService';
+import { useAuth } from '../context/AuthContext';
+import ComentarioForm from '../components/ComentarioForm';
 import './ProductDetail.css';
 
 const ProductDetail = () => {
   const PLACEHOLDER_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect width='100%' height='100%' fill='%23f8f9fa'/><text x='50%' y='50%' fill='%23999' font-size='24' dominant-baseline='middle' text-anchor='middle'>Sin imagen</text></svg>";
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, isAdmin } = useAuth();
   const [producto, setProducto] = useState(null);
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [comentarioEditando, setComentarioEditando] = useState(null);
+  const [comentarioDelUsuario, setComentarioDelUsuario] = useState(null);
 
   useEffect(() => {
     cargarProducto();
@@ -38,7 +48,15 @@ const ProductDetail = () => {
     try {
       const data = await getComentariosByPublicacion(id);
       console.log('getComentariosByPublicacion response:', data);
-      setComentarios(data);
+      // data tiene { total, calificacionPromedio, comentarios }
+      const listaComentarios = data.comentarios || [];
+      setComentarios(listaComentarios);
+      
+      // Verificar si el usuario ya comentó
+      if (user) {
+        const miComentario = listaComentarios.find(c => c.usuarioId === user.id);
+        setComentarioDelUsuario(miComentario || null);
+      }
     } catch (err) {
       console.error('Error al cargar comentarios:', err);
     }
@@ -50,6 +68,44 @@ const ProductDetail = () => {
     const suma = valid.reduce((acc, com) => acc + com.calificacion, 0);
     // devolver número (no string) para que Math.round y otras operaciones funcionen correctamente
     return parseFloat((suma / valid.length).toFixed(1));
+  };
+
+  const handleCrearComentario = async (comentarioData) => {
+    try {
+      await createComentario(comentarioData);
+      await cargarComentarios(); // Recargar comentarios
+      return Promise.resolve();
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  };
+
+  const handleEditarComentario = async (comentarioId, comentarioData) => {
+    try {
+      await updateComentario(comentarioId, comentarioData);
+      await cargarComentarios(); // Recargar comentarios
+      setComentarioEditando(null);
+      return Promise.resolve();
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  };
+
+  const handleEliminarComentario = async (comentarioId) => {
+    if (!window.confirm('¿Estás seguro de eliminar este comentario?')) {
+      return;
+    }
+    
+    try {
+      await deleteComentario(comentarioId);
+      await cargarComentarios(); // Recargar comentarios
+    } catch (error) {
+      alert('Error al eliminar comentario: ' + error);
+    }
+  };
+
+  const handleCancelarEdicion = () => {
+    setComentarioEditando(null);
   };
 
   const formatFecha = (dateString) => {
@@ -214,29 +270,96 @@ const ProductDetail = () => {
                   Reseñas de clientes ({comentarios.length})
                 </h3>
 
+                {/* Formulario para agregar comentario (solo si el usuario no ha comentado) */}
+                {user && !comentarioDelUsuario && !comentarioEditando && (
+                  <Card className="mb-4 bg-light">
+                    <Card.Body>
+                      <h5 className="mb-3">Deja tu reseña</h5>
+                      <ComentarioForm
+                        publicacionId={id}
+                        onComentarioCreado={handleCrearComentario}
+                      />
+                    </Card.Body>
+                  </Card>
+                )}
+
+                {/* Mensaje si el usuario no está logueado */}
+                {!user && (
+                  <Alert variant="info" className="mb-4">
+                    <a href="/login" className="alert-link">Inicia sesión</a> para dejar tu reseña.
+                  </Alert>
+                )}
+
                 {comentarios.length === 0 ? (
                   <Alert variant="info">
-                    Aún no hay reseñas para este producto. ¡Sé el primero en dejar una!
+                    Aún no hay reseñas para este producto. {user && !comentarioDelUsuario ? '¡Sé el primero en dejar una!' : ''}
                   </Alert>
                 ) : (
                   <div className="reviews-list">
                     {comentarios.map((comentario) => (
                       <Card key={comentario.id} className="review-card mb-3">
                         <Card.Body>
-                          <div className="review-header">
+                          {/* Si estamos editando este comentario, mostrar formulario */}
+                          {comentarioEditando?.id === comentario.id ? (
                             <div>
-                              <strong className="review-author">
-                                {comentario.usuario?.nombre || 'Usuario'}
-                              </strong>
-                              <div className="review-stars">
-                                {renderEstrellas(comentario.calificacion)}
-                              </div>
+                              <h5 className="mb-3">Editar comentario</h5>
+                              <ComentarioForm
+                                publicacionId={id}
+                                comentarioExistente={comentarioEditando}
+                                onComentarioEditado={handleEditarComentario}
+                              />
+                              <Button 
+                                variant="secondary" 
+                                size="sm" 
+                                onClick={handleCancelarEdicion}
+                                className="mt-2"
+                              >
+                                Cancelar
+                              </Button>
                             </div>
-                            <small className="review-date text-muted">
-                              {formatFecha(comentario.createdAt)}
-                            </small>
-                          </div>
-                          <p className="review-text mt-3">{comentario.texto}</p>
+                          ) : (
+                            <>
+                              <div className="review-header">
+                                <div>
+                                  <strong className="review-author">
+                                    {comentario.usuario?.nombre || 'Usuario'}
+                                  </strong>
+                                  <div className="review-stars">
+                                    {renderEstrellas(comentario.calificacion)}
+                                  </div>
+                                </div>
+                                <div className="d-flex align-items-center gap-2">
+                                  <small className="review-date text-muted">
+                                    {formatFecha(comentario.createdAt)}
+                                  </small>
+                                  
+                                  {/* Botones de edición/eliminación */}
+                                  {user && (comentario.usuarioId === user.id || isAdmin()) && (
+                                    <div className="ms-2">
+                                      {comentario.usuarioId === user.id && (
+                                        <Button
+                                          variant="outline-primary"
+                                          size="sm"
+                                          onClick={() => setComentarioEditando(comentario)}
+                                          className="me-1"
+                                        >
+                                          Editar
+                                        </Button>
+                                      )}
+                                      <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={() => handleEliminarComentario(comentario.id)}
+                                      >
+                                        Eliminar
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <p className="review-text mt-3">{comentario.texto}</p>
+                            </>
+                          )}
                         </Card.Body>
                       </Card>
                     ))}

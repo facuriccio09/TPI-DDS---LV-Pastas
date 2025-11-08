@@ -1,52 +1,46 @@
 import api from './api';
 
-// Obtener comentarios de una publicación
 export const getComentariosByPublicacion = async (publicacionId) => {
   try {
     const response = await api.get(`/comentarios/publicacion/${publicacionId}`);
-    return response.data.comentarios || [];
-  } catch (error) {
-    console.error('Error al obtener comentarios:', error);
-    return [];
-  }
-};
-
-// Crear un comentario
-export const createComentario = async (data) => {
-  try {
-    const response = await api.post('/comentarios', data);
     return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    throw error.response?.data?.error || 'Error al obtener comentarios';
   }
 };
 
-// Actualizar un comentario
-export const updateComentario = async (id, data) => {
+export const createComentario = async (comentarioData) => {
   try {
-    const response = await api.put(`/comentarios/${id}`, data);
+    const response = await api.post('/comentarios', comentarioData);
     return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    throw error.response?.data?.error || 'Error al crear comentario';
   }
 };
 
-// Eliminar un comentario
+export const updateComentario = async (id, comentarioData) => {
+  try {
+    const response = await api.put(`/comentarios/${id}`, comentarioData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.error || 'Error al actualizar comentario';
+  }
+};
+
 export const deleteComentario = async (id) => {
   try {
     const response = await api.delete(`/comentarios/${id}`);
     return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    throw error.response?.data?.error || 'Error al eliminar comentario';
   }
 };
 
-// Obtener comentarios de un usuario
 export const getComentariosByUsuario = async (usuarioId) => {
   try {
     const response = await api.get(`/comentarios/usuario/${usuarioId}`);
     return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    throw error.response?.data?.error || 'Error al obtener comentarios del usuario';
   }
 };

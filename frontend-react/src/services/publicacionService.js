@@ -52,9 +52,9 @@ export const deletePublicacion = async (id) => {
 };
 
 // Cambiar disponibilidad (admin)
-export const toggleDisponibilidad = async (id) => {
+export const toggleDisponibilidad = async (id, disponible) => {
   try {
-    const response = await api.patch(`/publicaciones/${id}/disponibilidad`);
+    const response = await api.patch(`/publicaciones/${id}/disponibilidad`, { disponible });
     return response.data;
   } catch (error) {
     throw error.response?.data || error;
