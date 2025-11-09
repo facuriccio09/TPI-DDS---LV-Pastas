@@ -1,0 +1,124 @@
+/* src/pages/Admin.css */
+/* Estilo general del contenedor del admin */
+.admin-page {
+  display: flex;
+  min-height: calc(100vh - 90px); /* Resta altura del navbar */
+  background-color: #f8f9fa;
+}
+
+/* --- Barra Lateral --- */
+.admin-sidebar {
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  padding: 2rem 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.admin-sidebar-header {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 1.5rem;
+}
+
+.admin-sidebar-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #555;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.admin-nav-link:hover {
+  background-color: #f8f9fa;
+  color: #27ae60;
+  border-left-color: #27ae60;
+}
+
+.admin-nav-link.active {
+  background-color: #e6f7ee;
+  color: #229954;
+  border-left-color: #229954;
+  font-weight: 700;
+}
+
+/* --- Área de Contenido Principal --- */
+.admin-content {
+  flex-grow: 1;
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+.admin-content-header {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid #27ae60;
+}
+
+/* --- Estilos globales para tablas de admin --- */
+.admin-table {
+  background: #ffffff;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.admin-table thead th {
+  background-color: #f8f9fa;
+  border-bottom-width: 2px;
+  font-weight: 700;
+  color: #333;
+}
+
+.admin-table .btn-sm {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+}
+
+/* --- Estilos para tarjetas de admin --- */
+.admin-card {
+  background: #ffffff;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 991px) {
+  .admin-page {
+    flex-direction: column;
+  }
+  
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .admin-content {
+    padding: 1.5rem;
+  }
+}

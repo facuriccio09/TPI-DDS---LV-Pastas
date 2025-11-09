@@ -1,0 +1,86 @@
+/* src/pages/Register.css */
+/* Usamos clases similares a Login.css para reutilizar estilos */
+
+.register-page {
+  background-color: #f8f9fa;
+  padding: 4rem 0;
+  min-height: calc(100vh - 90px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-card {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.register-card .card-header {
+  background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+  color: white;
+  padding: 1.5rem;
+  text-align: center;
+  border-bottom: none;
+}
+
+.register-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.register-card .card-body {
+  padding: 2.5rem;
+}
+
+/* Inputs */
+.register-card .form-control {
+  border-radius: 10px;
+  border: 2px solid #e0e0e0;
+  padding: 0.75rem 1rem;
+  background-color: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.register-card .form-control:focus {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 0.25rem rgba(192, 57, 43, 0.15);
+  background-color: white;
+}
+
+/* Botón de Registro */
+.btn-register {
+  background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%) !important;
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 25px !important;
+  transition: all 0.3s ease !important;
+  font-size: 1.1rem !important;
+  width: 100%;
+}
+
+.btn-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.4) !important;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.login-link a {
+  color: #c0392b;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.login-link a:hover {
+  color: #a93226;
+  text-decoration: underline;
+}

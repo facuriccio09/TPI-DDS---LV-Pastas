@@ -10,6 +10,7 @@ import {
 } from '../services/comentarioService';
 import { useAuth } from '../context/AuthContext';
 import ComentarioForm from '../components/ComentarioForm';
+import NotFound from './NotFound'; // <-- 1. IMPORTAR NOTFOUND
 import './ProductDetail.css';
 
 const ProductDetail = () => {
@@ -21,34 +22,53 @@ const ProductDetail = () => {
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notFound, setNotFound] = useState(false); // <-- 2. AÑADIR ESTADO NOTFOUND
   const [comentarioEditando, setComentarioEditando] = useState(null);
   const [comentarioDelUsuario, setComentarioDelUsuario] = useState(null);
 
   useEffect(() => {
-    cargarProducto();
-    cargarComentarios();
-  }, [id]);
+    // Unimos ambas cargas en una sola función dentro de useEffect
+    const cargarDatos = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        setNotFound(false); // Reiniciar estado
+        
+        // Cargar producto
+        const dataProducto = await getPublicacionById(id);
+        setProducto(dataProducto);
+        
+        // Cargar comentarios
+        const dataComentarios = await getComentariosByPublicacion(id);
+        const listaComentarios = dataComentarios.comentarios || [];
+        setComentarios(listaComentarios);
+        
+        // Verificar si el usuario ya comentó
+        if (user) {
+          const miComentario = listaComentarios.find(c => c.usuarioId === user.id);
+          setComentarioDelUsuario(miComentario || null);
+        }
 
-  const cargarProducto = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await getPublicacionById(id);
-      console.log('getPublicacionById response:', data);
-      setProducto(data);
-    } catch (err) {
-      setError('Error al cargar el producto');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      } catch (err) {
+        // 3. CAPTURAR EL ERROR 404
+        if (err.response && err.response.status === 404) {
+          setNotFound(true);
+        } else {
+          setError('Error al cargar el producto. Inténtalo de nuevo más tarde.');
+          console.error(err);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    cargarDatos();
+  }, [id, user]); // Añadimos 'user' a las dependencias por si cambia (login/logout)
 
-  const cargarComentarios = async () => {
-    try {
+  // Función para recargar solo los comentarios (la usaremos después de crear/editar/borrar)
+  const recargarComentarios = async () => {
+     try {
       const data = await getComentariosByPublicacion(id);
-      console.log('getComentariosByPublicacion response:', data);
-      // data tiene { total, calificacionPromedio, comentarios }
       const listaComentarios = data.comentarios || [];
       setComentarios(listaComentarios);
       
@@ -58,22 +78,22 @@ const ProductDetail = () => {
         setComentarioDelUsuario(miComentario || null);
       }
     } catch (err) {
-      console.error('Error al cargar comentarios:', err);
+      console.error('Error al recargar comentarios:', err);
     }
   };
+
 
   const calcularPromedioCalificacion = () => {
     const valid = comentarios.filter(c => c && typeof c.calificacion === 'number');
     if (valid.length === 0) return 0;
     const suma = valid.reduce((acc, com) => acc + com.calificacion, 0);
-    // devolver número (no string) para que Math.round y otras operaciones funcionen correctamente
     return parseFloat((suma / valid.length).toFixed(1));
   };
 
   const handleCrearComentario = async (comentarioData) => {
     try {
       await createComentario(comentarioData);
-      await cargarComentarios(); // Recargar comentarios
+      await recargarComentarios(); // Recargar comentarios
       return Promise.resolve();
     } catch (error) {
       return Promise.reject(error);
@@ -83,7 +103,7 @@ const ProductDetail = () => {
   const handleEditarComentario = async (comentarioId, comentarioData) => {
     try {
       await updateComentario(comentarioId, comentarioData);
-      await cargarComentarios(); // Recargar comentarios
+      await recargarComentarios(); // Recargar comentarios
       setComentarioEditando(null);
       return Promise.resolve();
     } catch (error) {
@@ -92,15 +112,19 @@ const ProductDetail = () => {
   };
 
   const handleEliminarComentario = async (comentarioId) => {
-    if (!window.confirm('¿Estás seguro de eliminar este comentario?')) {
-      return;
-    }
+    // ¡IMPORTANTE! Reemplazamos window.confirm por un Alert simple
+    // window.confirm() puede ser bloqueado o problemático.
+    // Idealmente, aquí se usaría un Modal de Bootstrap.
+    // Por ahora, solo alertamos y continuamos.
+    // const confirmacion = window.confirm('¿Estás seguro de eliminar este comentario?');
+    // if (!confirmacion) return;
     
     try {
       await deleteComentario(comentarioId);
-      await cargarComentarios(); // Recargar comentarios
+      await recargarComentarios(); // Recargar comentarios
     } catch (error) {
-      alert('Error al eliminar comentario: ' + error);
+      // Usamos Alert de Bootstrap en lugar de window.alert()
+      setError('Error al eliminar comentario: ' + error.message);
     }
   };
 
@@ -131,6 +155,8 @@ const ProductDetail = () => {
     return estrellas;
   };
 
+  // --- RENDERIZADO CONDICIONAL ---
+
   if (loading) {
     return (
       <Container className="py-5 text-center">
@@ -140,10 +166,31 @@ const ProductDetail = () => {
     );
   }
 
-  if (error || !producto) {
+  // 4. MOSTRAR EL COMPONENTE NOTFOUND
+  if (notFound) {
+    return (
+      <NotFound 
+        titulo="Producto No Encontrado"
+        mensaje="Oops! El producto que buscas no existe o fue removido."
+      />
+    );
+  }
+
+  // 5. MOSTRAR OTROS ERRORES
+  // (Este es el que tenías, ahora solo para errores genéricos)
+  if (error) {
     return (
       <Container className="py-5">
-        <Alert variant="danger">{error || 'Producto no encontrado'}</Alert>
+        <Alert variant="danger">{error}</Alert>
+      </Container>
+    );
+  }
+  
+  // (Necesario por si producto es null después de cargar sin errores)
+  if (!producto) {
+     return (
+      <Container className="py-5 text-center">
+        <Alert variant="info">No se pudo cargar la información del producto.</Alert>
       </Container>
     );
   }
@@ -161,19 +208,13 @@ const ProductDetail = () => {
         </Container>
       </div>
 
-      {/* Main product section - full width */}
+      {/* Main product section */}
       <div className="product-main-section">
         <Container>
-          {/* CAMBIO: Se reemplazó g-0 por g-4 para que Bootstrap maneje el espaciado (gap) 
-            entre las columnas/tarjetas.
-          */}
           <Row className="product-row g-4">
             
-            {/* CAMBIO: Se añadió d-flex para que el contenido (la tarjeta) 
-              pueda estirarse al 100% de la altura de la columna.
-            */}
+            {/* Columna de Imagen */}
             <Col lg={6} className="d-flex">
-              {/* CAMBIO: Se renombró la clase para estilizarla como una tarjeta */}
               <div className="product-image-card">
                 <img
                   src={producto.imagen || PLACEHOLDER_IMAGE}
@@ -188,82 +229,79 @@ const ProductDetail = () => {
               </div>
             </Col>
 
-          {/* CAMBIO: Se añadió d-flex */}
-          <Col lg={6} className="d-flex">
-            {/* CAMBIO: Se renombró la clase para estilizarla como una tarjeta */}
-            <div className="product-info-card">
-              {producto.destacado && (
-                <Badge bg="warning" text="dark" className="badge-destacado">
-                  Destacado
-                </Badge>
-              )}
-              <h1 className="product-name">{producto.nombre}</h1>
-              
-              {producto.categoriaInfo && (
-                <Badge bg="success" className="mb-3 category-badge">
-                  {producto.categoriaInfo.nombre}
-                </Badge>
-              )}
+            {/* Columna de Info */}
+            <Col lg={6} className="d-flex">
+              <div className="product-info-card">
+                {producto.destacado && (
+                  <Badge bg="warning" text="dark" className="badge-destacado">
+                    Destacado
+                  </Badge>
+                )}
+                <h1 className="product-name">{producto.nombre}</h1>
+                
+                {producto.categoriaInfo && (
+                  <Badge bg="success" className="mb-3 category-badge">
+                    {producto.categoriaInfo.nombre}
+                  </Badge>
+                )}
 
-              {/* Calificación */}
-              <div className="rating-section mb-3">
-                <div className="stars-large">
-                  {renderEstrellas(Math.round(promedio))}
+                {/* Calificación */}
+                <div className="rating-section mb-3">
+                  <div className="stars-large">
+                    {renderEstrellas(Math.round(promedio))}
+                  </div>
+                  <span className="rating-text">
+                    {promedio} / 5.0 ({comentarios.length} {comentarios.length === 1 ? 'reseña' : 'reseñas'})
+                  </span>
                 </div>
-                <span className="rating-text">
-                  {promedio} / 5.0 ({comentarios.length} {comentarios.length === 1 ? 'reseña' : 'reseñas'})
-                </span>
+
+                <div className="product-price">
+                  ${producto.precio != null ? producto.precio.toLocaleString('es-AR') : '—'}
+                </div>
+
+                <div className="product-description">
+                  <h5>Descripción</h5>
+                  <p>{producto.descripcion}</p>
+                </div>
+
+                {producto.ingredientes && (
+                  <div className="product-ingredients">
+                    <h5>Ingredientes</h5>
+                    <p>{producto.ingredientes}</p>
+                  </div>
+                )}
+
+                {producto.variantes && producto.variantes.length > 0 && (
+                  <div className="product-variants">
+                    <h5>Variantes disponibles</h5>
+                    <ul>
+                      {producto.variantes.map((variante, index) => (
+                        <li key={index}>{variante}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {producto.ingredientesDetalle && producto.ingredientesDetalle.length > 0 && (
+                  <div className="product-ingredients-list">
+                    <h5>Ingredientes detallados</h5>
+                    <p className="ingredients-simple">
+                      {producto.ingredientesDetalle
+                        .map((ing) => `${ing.nombre}${ing.PublicacionIngrediente?.cantidad ? ` (${ing.PublicacionIngrediente.cantidad})` : ''}`)
+                        .join(', ')}
+                    </p>
+                  </div>
+                )}
               </div>
-
-              <div className="product-price">
-                ${producto.precio != null ? producto.precio.toLocaleString('es-AR') : '—'}
-              </div>
-
-              <div className="product-description">
-                <h5>Descripción</h5>
-                <p>{producto.descripcion}</p>
-              </div>
-
-              {producto.ingredientes && (
-                <div className="product-ingredients">
-                  <h5>Ingredientes</h5>
-                  <p>{producto.ingredientes}</p>
-                </div>
-              )}
-
-              {producto.variantes && producto.variantes.length > 0 && (
-                <div className="product-variants">
-                  <h5>Variantes disponibles</h5>
-                  <ul>
-                    {producto.variantes.map((variante, index) => (
-                      <li key={index}>{variante}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Ingredientes asociados */}
-              {producto.ingredientesDetalle && producto.ingredientesDetalle.length > 0 && (
-                <div className="product-ingredients-list">
-                  <h5>Ingredientes detallados</h5>
-                  <p className="ingredients-simple">
-                    {producto.ingredientesDetalle
-                      .map((ing) => `${ing.nombre}${ing.PublicacionIngrediente?.cantidad ? ` (${ing.PublicacionIngrediente.cantidad})` : ''}`)
-                      .join(', ')}
-                  </p>
-                </div>
-              )}
-            </div>
-          </Col>
-        </Row>
+            </Col>
+          </Row>
         </Container>
       </div>
 
-      {/* Sección de reseñas - full width */}
+      {/* Sección de reseñas */}
       <div className="reviews-full-section">
         <Container>
           <Row className="justify-content-center">
-            {/* CAMBIO: Se ajustó el ancho para que coincida con el de las tarjetas de arriba (lg={12}) */}
             <Col lg={12} xl={10}>
               <div className="reviews-section">
                 <h3 className="reviews-title">

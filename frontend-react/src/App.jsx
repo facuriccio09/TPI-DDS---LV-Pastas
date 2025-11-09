@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Perfil from './pages/Perfil';
 import Admin from './pages/Admin';
+import NotFound from './pages/NotFound'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -27,15 +28,17 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             
+            
             {/* Rutas protegidas (requieren autenticación) */}
             <Route element={<ProtectedRoute />}>
               <Route path="/perfil" element={<Perfil />} />
             </Route>
-            
+          
             {/* Rutas de administrador */}
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<Admin />} />
             </Route>
+            <Route path="*" element={<NotFound />} /> {/* Nueva ruta para NotFound */}
           </Routes>
         </div>
       </Router>

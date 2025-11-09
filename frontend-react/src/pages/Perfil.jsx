@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Container, Card, Row, Col, Spinner, Alert, Badge } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { Container, Card, Row, Col, Spinner, Alert, Badge, ListGroup, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { getPerfil } from '../services/authService';
+import './Perfil.css'; // <-- IMPORTAMOS EL CSS DE PERFIL
 
 const Perfil = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); // <-- Obtenemos logout del contexto
+  const navigate = useNavigate();
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,6 +28,11 @@ const Perfil = () => {
     cargarPerfil();
   }, []);
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login'); // Redirigimos al login después de cerrar sesión
+  };
+
   if (loading) {
     return (
       <Container className="py-5 text-center">
@@ -42,60 +50,74 @@ const Perfil = () => {
     );
   }
 
+  // Usamos los datos del 'perfil' (de la API) si existen, 
+  // si no, usamos los del 'user' (del contexto) como fallback.
+  const displayUser = perfil || user;
+
   return (
-    <Container className="py-5">
-      <Row className="justify-content-center">
-        <Col md={8} lg={6}>
-          <Card>
-            <Card.Header className="bg-success text-white">
-              <h3 className="mb-0">Mi Perfil</h3>
-            </Card.Header>
-            <Card.Body>
-              <div className="mb-3">
-                <strong>Nombre:</strong>
-                <p className="text-muted">{perfil?.nombre || user?.nombre}</p>
-              </div>
+    // Aplicamos la clase de fondo de página
+    <div className="perfil-page">
+      <Container>
+        <Row className="justify-content-center">
+          <Col md={8} lg={7}>
+            {/* Aplicamos la clase de tarjeta personalizada */}
+            <Card className="perfil-card">
+              
+              {/* Header oscuro, como en tu estética */}
+              <Card.Header className="perfil-header">
+                <h2 className="perfil-title">{displayUser?.nombre}</h2>
+                <p className="perfil-email">{displayUser?.email}</p>
+              </Card.Header>
 
-              <div className="mb-3">
-                <strong>Email:</strong>
-                <p className="text-muted">{perfil?.email || user?.email}</p>
-              </div>
+              <Card.Body className="perfil-body">
+                <h5 className="perfil-section-title">Detalles de la Cuenta</h5>
+                
+                {/* Lista de detalles */}
+                <ListGroup variant="flush" className="mb-4">
+                  <ListGroup.Item>
+                    <strong>Rol:</strong>
+                    <Badge bg={displayUser?.rol === 'admin' ? 'danger' : 'success'} pill>
+                      {displayUser?.rol === 'admin' ? 'Administrador' : 'Usuario'}
+                    </Badge>
+                  </ListGroup.Item>
+                  
+                  <ListGroup.Item>
+                    <strong>Estado:</strong>
+                    <Badge bg={displayUser?.activo ? 'success' : 'secondary'} pill>
+                      {displayUser?.activo ? 'Activo' : 'Inactivo'}
+                    </Badge>
+                  </ListGroup.Item>
+                  
+                  <ListGroup.Item>
+                    <strong>Miembro desde:</strong>
+                    <span className="text-muted">
+                      {displayUser?.createdAt 
+                        ? new Date(displayUser.createdAt).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })
+                        : 'No disponible'}
+                    </span>
+                  </ListGroup.Item>
+                </ListGroup>
+              </Card.Body>
 
-              <div className="mb-3">
-                <strong>Rol:</strong>
-                <div>
-                  <Badge bg={perfil?.rol === 'admin' ? 'danger' : 'primary'}>
-                    {perfil?.rol === 'admin' ? 'Administrador' : 'Usuario'}
-                  </Badge>
-                </div>
-              </div>
+              {/* Pie de tarjeta con el botón de logout */}
+              <Card.Footer className="perfil-footer">
+                <Button 
+                  className="btn-logout" 
+                  onClick={handleLogout}
+                >
+                  Cerrar Sesión
+                </Button>
+              </Card.Footer>
 
-              <div className="mb-3">
-                <strong>Estado:</strong>
-                <div>
-                  <Badge bg={perfil?.activo ? 'success' : 'secondary'}>
-                    {perfil?.activo ? 'Activo' : 'Inactivo'}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="mb-3">
-                <strong>Miembro desde:</strong>
-                <p className="text-muted">
-                  {perfil?.createdAt 
-                    ? new Date(perfil.createdAt).toLocaleDateString('es-ES', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })
-                    : 'No disponible'}
-                </p>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Container, Form, Button, Alert, Card, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { register as authServiceRegister } from '../services/authService';
-import './Login.css'; // Reutilizamos los estilos del login
+import './Register.css'; // <-- CAMBIO: Importa su propio CSS
 
 const Register = () => {
   const [nombre, setNombre] = useState('');
@@ -52,13 +52,14 @@ const Register = () => {
   };
 
   return (
-    <div className="login-page">
+    // CAMBIO: Se usan las clases de Register.css
+    <div className="register-page">
       <Container>
         <Row className="justify-content-center">
           <Col md={6} lg={5}>
-            <Card className="login-card">
-              <Card.Header>
-                <h2 className="login-title">Crear Cuenta</h2>
+            <Card className="register-card">
+              <Card.Header className="card-header">
+                <h2 className="register-title">Crear Cuenta</h2>
               </Card.Header>
 
               <Card.Body>
@@ -111,14 +112,15 @@ const Register = () => {
                   
                   <Button 
                     type="submit" 
-                    className="btn-login"
+                    className="btn-register" // <-- CAMBIO: Clase de botón
                     disabled={loading}
                   >
                     {loading ? 'Registrando...' : 'Registrarse'}
                   </Button>
                 </Form>
                 
-                <div className="register-link">
+                {/* CAMBIO: Clase para el link de "ya tienes cuenta" */}
+                <div className="login-link">
                   <small>
                     ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
                   </small>
