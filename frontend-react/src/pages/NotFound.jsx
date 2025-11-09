@@ -14,7 +14,7 @@ const NotFound = ({
           <Col md={8} lg={6} className="text-center">
             <div className="notfound-card">
               <div className="notfound-icon">
-                📦
+                🍝
               </div>
               <h1 className="notfound-title">{titulo}</h1>
               <p className="notfound-message">

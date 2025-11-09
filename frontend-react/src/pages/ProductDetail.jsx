@@ -34,26 +34,34 @@ const ProductDetail = () => {
         setError(null);
         setNotFound(false); // Reiniciar estado
         
-        // Cargar producto
+        // Cargar producto - si falla aquí con 404, es porque el producto no existe
         const dataProducto = await getPublicacionById(id);
         setProducto(dataProducto);
         
-        // Cargar comentarios
-        const dataComentarios = await getComentariosByPublicacion(id);
-        const listaComentarios = dataComentarios.comentarios || [];
-        setComentarios(listaComentarios);
-        
-        // Verificar si el usuario ya comentó
-        if (user) {
-          const miComentario = listaComentarios.find(c => c.usuarioId === user.id);
-          setComentarioDelUsuario(miComentario || null);
+        // Cargar comentarios - si esto falla, no es tan grave
+        try {
+          const dataComentarios = await getComentariosByPublicacion(id);
+          const listaComentarios = dataComentarios.comentarios || [];
+          setComentarios(listaComentarios);
+          
+          // Verificar si el usuario ya comentó
+          if (user) {
+            const miComentario = listaComentarios.find(c => c.usuarioId === user.id);
+            setComentarioDelUsuario(miComentario || null);
+          }
+        } catch (comentarioErr) {
+          // Si falla al cargar comentarios, solo mostramos los comentarios vacíos
+          console.warn('No se pudieron cargar los comentarios:', comentarioErr);
+          setComentarios([]);
         }
 
       } catch (err) {
-        // 3. CAPTURAR EL ERROR 404
+        // 3. CAPTURAR EL ERROR 404 del producto
         if (err.response && err.response.status === 404) {
           setNotFound(true);
+          setError(null); // Importante: limpiar error para que no compita
         } else {
+          setNotFound(false);
           setError('Error al cargar el producto. Inténtalo de nuevo más tarde.');
           console.error(err);
         }
@@ -166,7 +174,7 @@ const ProductDetail = () => {
     );
   }
 
-  // 4. MOSTRAR EL COMPONENTE NOTFOUND
+  // 4. MOSTRAR EL COMPONENTE NOTFOUND PRIMERO (antes de verificar error)
   if (notFound) {
     return (
       <NotFound 
@@ -177,7 +185,6 @@ const ProductDetail = () => {
   }
 
   // 5. MOSTRAR OTROS ERRORES
-  // (Este es el que tenías, ahora solo para errores genéricos)
   if (error) {
     return (
       <Container className="py-5">
@@ -186,7 +193,7 @@ const ProductDetail = () => {
     );
   }
   
-  // (Necesario por si producto es null después de cargar sin errores)
+  // Verificación final por si producto es null
   if (!producto) {
      return (
       <Container className="py-5 text-center">

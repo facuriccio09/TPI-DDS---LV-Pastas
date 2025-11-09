@@ -17,7 +17,8 @@ export const getPublicacionById = async (id) => {
     // El backend devuelve { publicacion: {...} }
     return response.data.publicacion || response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    // Re-lanzar el error completo para que ProductDetail pueda acceder a error.response.status
+    throw error;
   }
 };
 
