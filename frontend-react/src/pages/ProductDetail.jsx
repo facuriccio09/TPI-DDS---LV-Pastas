@@ -330,9 +330,42 @@ const ProductDetail = () => {
 
                 {/* Mensaje si el usuario no está logueado */}
                 {!user && (
-                  <Alert variant="info" className="mb-4">
-                    <a href="/login" className="alert-link">Inicia sesión</a> para dejar tu reseña.
-                  </Alert>
+                  <Card className="login-prompt-card mb-4 border-0 shadow-sm">
+                    <Card.Body className="text-center py-5">
+                      <div className="login-prompt-icon mb-3">
+                        <svg 
+                          width="60" 
+                          height="60" 
+                          viewBox="0 0 24 24" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2" 
+                          className="text-success"
+                        >
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                      </div>
+                      <h5 className="mb-3">¿Querés dejar tu opinión?</h5>
+                      <p className="text-muted mb-4">
+                        Iniciá sesión para compartir tu experiencia con este producto
+                        y ayudar a otros clientes.
+                      </p>
+                      <a 
+                        href="/login" 
+                        className="btn btn-success btn-lg px-5"
+                        style={{
+                          borderRadius: '30px',
+                          fontWeight: '600',
+                          background: 'linear-gradient(135deg, #27ae60 0%, #229954 100%)',
+                          border: 'none',
+                          boxShadow: '0 4px 15px rgba(39, 174, 96, 0.3)'
+                        }}
+                      >
+                        🔐 Iniciar Sesión
+                      </a>
+                    </Card.Body>
+                  </Card>
                 )}
 
                 {comentarios.length === 0 ? (

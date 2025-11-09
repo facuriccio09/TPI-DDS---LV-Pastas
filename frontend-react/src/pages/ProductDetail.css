@@ -367,3 +367,66 @@
     padding: 1.5rem;
   }
 }
+
+/* Login Prompt Card */
+.login-prompt-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 2px solid #e9ecef !important;
+  border-radius: 20px !important;
+  overflow: hidden;
+}
+
+.login-prompt-card .card-body {
+  position: relative;
+}
+
+.login-prompt-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(39, 174, 96, 0.05) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+.login-prompt-icon {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.login-prompt-card h5 {
+  color: #2c3e50;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.login-prompt-card p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.login-prompt-card .btn-success:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4) !important;
+  background: linear-gradient(135deg, #229954 0%, #1e8449 100%) !important;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+

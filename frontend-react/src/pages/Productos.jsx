@@ -150,9 +150,35 @@ const Productos = () => {
         ) : error ? (
           <Alert variant="danger">{error}</Alert>
         ) : productos.length === 0 ? (
-          <Alert variant="info">
-            No se encontraron productos con los filtros seleccionados.
-          </Alert>
+          <div className="empty-products-container text-center py-5">
+            <div className="empty-products-icon mb-4">
+              <svg 
+                width="120" 
+                height="120" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="1.5" 
+                className="text-muted"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <h3 className="mb-3">No se encontraron productos</h3>
+            <p className="text-muted mb-4">
+              No hay productos que coincidan con los filtros seleccionados.
+              <br />
+              Intenta ajustar los filtros o limpia la búsqueda.
+            </p>
+            <button 
+              className="btn btn-success"
+              onClick={limpiarFiltros}
+            >
+              Limpiar todos los filtros
+            </button>
+          </div>
         ) : (
           <>
             <div className="mb-4">
