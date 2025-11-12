@@ -204,16 +204,7 @@ const Productos = () => {
             </button>
           </div>
         ) : (
-          <>
-            <div className="mb-4">
-              <h5 className="text-muted">
-                Se encontraron <strong>{paginacion.total}</strong> productos
-                {paginacion.totalPages > 1 && (
-                  <span> - Página {paginacion.currentPage} de {paginacion.totalPages}</span>
-                )}
-              </h5>
-            </div>
-            
+          <>           
             <Row>
               {productos.map(producto => (
                 <Col key={producto.id} lg={4} md={6} className="mb-4">
