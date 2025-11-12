@@ -6,7 +6,7 @@ const { verificarToken, esAdmin } = require('../middlewares/auth');
 // GET /api/publicaciones - Obtener todas las publicaciones (público)
 router.get('/', async (req, res, next) => {
   try {
-    const { categoria, disponible, destacado } = req.query;
+    const { categoria, disponible, destacado, page = 1, limit = 9 } = req.query;
 
     // Construir filtros dinámicos
     const where = {};
@@ -14,7 +14,10 @@ router.get('/', async (req, res, next) => {
     if (disponible !== undefined) where.disponible = disponible === 'true';
     if (destacado !== undefined) where.destacado = destacado === 'true';
 
-    const publicaciones = await Publicacion.findAll({
+    // Calcular offset para paginación
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const { count, rows: publicaciones } = await Publicacion.findAndCountAll({
       where,
       include: [{
         model: Comentario,
@@ -26,7 +29,10 @@ router.get('/', async (req, res, next) => {
           attributes: ['nombre']
         }]
       }],
-      order: [['createdAt', 'DESC']]
+      distinct: true, // FIX: Evita contar duplicados cuando hay includes
+      order: [['createdAt', 'DESC']],
+      limit: parseInt(limit),
+      offset: offset
     });
 
     // Calcular calificación promedio para cada publicación
@@ -43,8 +49,15 @@ router.get('/', async (req, res, next) => {
       return pubJSON;
     });
 
+    // Calcular información de paginación
+    const totalPages = Math.ceil(count / parseInt(limit));
+    const currentPage = parseInt(page);
+
     res.json({
-      total: publicacionesConPromedio.length,
+      total: count,
+      totalPages,
+      currentPage,
+      pageSize: parseInt(limit),
       publicaciones: publicacionesConPromedio
     });
   } catch (error) {
@@ -209,7 +222,7 @@ router.patch('/:id/disponibilidad', verificarToken, esAdmin, async (req, res, ne
     if (disponible === undefined) {
       return res.status(400).json({
         error: 'El campo disponible es requerido'
-      });
+      });  
     }
 
     const publicacion = await Publicacion.findByPk(id);

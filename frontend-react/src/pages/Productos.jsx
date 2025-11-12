@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Spinner, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Form, Spinner, Alert, Pagination } from 'react-bootstrap';
 import ProductCard from '../components/ProductCard';
 import { getPublicaciones } from '../services/publicacionService';
 import { getCategorias } from '../services/categoriaService';
@@ -10,6 +10,12 @@ const Productos = () => {
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [paginacion, setPaginacion] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    total: 0,
+    pageSize: 9
+  });
   const [filtros, setFiltros] = useState({
     categoria: '',
     destacado: '',
@@ -22,7 +28,7 @@ const Productos = () => {
 
   useEffect(() => {
     cargarProductos();
-  }, [filtros]);
+  }, [filtros, paginacion.currentPage]);
 
   const cargarCategorias = async () => {
     try {
@@ -39,13 +45,21 @@ const Productos = () => {
       setError(null);
       
       // Filtrar parámetros vacíos
-      const params = {};
+      const params = {
+        page: paginacion.currentPage,
+        limit: paginacion.pageSize
+      };
       if (filtros.categoria) params.categoria = filtros.categoria;
       if (filtros.destacado) params.destacado = filtros.destacado;
       if (filtros.disponible) params.disponible = filtros.disponible;
 
       const data = await getPublicaciones(params);
       setProductos(data.publicaciones || []);
+      setPaginacion(prev => ({
+        ...prev,
+        totalPages: data.totalPages || 1,
+        total: data.total || 0
+      }));
     } catch (err) {
       setError('Error al cargar los productos');
       console.error(err);
@@ -60,6 +74,8 @@ const Productos = () => {
       ...prev,
       [name]: value
     }));
+    // Resetear a la página 1 cuando cambian los filtros
+    setPaginacion(prev => ({ ...prev, currentPage: 1 }));
   };
 
   const limpiarFiltros = () => {
@@ -68,6 +84,14 @@ const Productos = () => {
       destacado: '',
       disponible: 'true'
     });
+    // Resetear a la página 1
+    setPaginacion(prev => ({ ...prev, currentPage: 1 }));
+  };
+
+  const handlePageChange = (pageNumber) => {
+    setPaginacion(prev => ({ ...prev, currentPage: pageNumber }));
+    // Scroll suave hacia arriba
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -183,7 +207,10 @@ const Productos = () => {
           <>
             <div className="mb-4">
               <h5 className="text-muted">
-                Se encontraron <strong>{productos.length}</strong> productos
+                Se encontraron <strong>{paginacion.total}</strong> productos
+                {paginacion.totalPages > 1 && (
+                  <span> - Página {paginacion.currentPage} de {paginacion.totalPages}</span>
+                )}
               </h5>
             </div>
             
@@ -194,6 +221,57 @@ const Productos = () => {
                 </Col>
               ))}
             </Row>
+
+            {/* Paginación */}
+            {paginacion.totalPages > 1 && (
+              <div className="d-flex justify-content-center mt-5">
+                <Pagination>
+                  <Pagination.First 
+                    onClick={() => handlePageChange(1)}
+                    disabled={paginacion.currentPage === 1}
+                  />
+                  <Pagination.Prev 
+                    onClick={() => handlePageChange(paginacion.currentPage - 1)}
+                    disabled={paginacion.currentPage === 1}
+                  />
+                  
+                  {[...Array(paginacion.totalPages)].map((_, index) => {
+                    const pageNumber = index + 1;
+                    // Mostrar solo páginas cercanas a la actual
+                    if (
+                      pageNumber === 1 ||
+                      pageNumber === paginacion.totalPages ||
+                      (pageNumber >= paginacion.currentPage - 2 && pageNumber <= paginacion.currentPage + 2)
+                    ) {
+                      return (
+                        <Pagination.Item
+                          key={pageNumber}
+                          active={pageNumber === paginacion.currentPage}
+                          onClick={() => handlePageChange(pageNumber)}
+                        >
+                          {pageNumber}
+                        </Pagination.Item>
+                      );
+                    } else if (
+                      pageNumber === paginacion.currentPage - 3 ||
+                      pageNumber === paginacion.currentPage + 3
+                    ) {
+                      return <Pagination.Ellipsis key={pageNumber} disabled />;
+                    }
+                    return null;
+                  })}
+
+                  <Pagination.Next 
+                    onClick={() => handlePageChange(paginacion.currentPage + 1)}
+                    disabled={paginacion.currentPage === paginacion.totalPages}
+                  />
+                  <Pagination.Last 
+                    onClick={() => handlePageChange(paginacion.totalPages)}
+                    disabled={paginacion.currentPage === paginacion.totalPages}
+                  />
+                </Pagination>
+              </div>
+            )}
           </>
         )}
       </Container>
