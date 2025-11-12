@@ -15,8 +15,8 @@ const startServer = async () => {
     
     // Iniciar servidor Express
     app.listen(PORT, () => {
-      console.log(`\n🚀 Servidor corriendo en http://localhost:${PORT}`);
-      console.log(`📚 API L.V Pastas Frescas iniciada correctamente\n`);
+      console.log(`\n Servidor corriendo en http://localhost:${PORT}`);
+      console.log(`API L.V Pastas Frescas iniciada correctamente\n`);
     });
   } catch (error) {
     console.error('Error al iniciar el servidor:', error);
