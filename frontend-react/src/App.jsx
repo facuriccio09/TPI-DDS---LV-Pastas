@@ -7,7 +7,7 @@ import Home from './pages/Home';
 import Productos from './pages/Productos';
 import ProductDetail from './pages/ProductDetail';
 import Login from './pages/Login';
-import Register from './pages/Register';
+// import Register from './pages/Register'; // Ya no se usa - Keycloak maneja el registro
 import Perfil from './pages/Perfil';
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound'; 
@@ -26,7 +26,7 @@ function App() {
             <Route path="/productos" element={<Productos />} />
             <Route path="/productos/:id" element={<ProductDetail />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            {/* <Route path="/register" element={<Register />} /> */} {/* Deshabilitado - Usar Keycloak */}
             
             
             {/* Rutas protegidas (requieren autenticación) */}

@@ -1,6 +1,12 @@
 # L.V Pastas Frescas - La Vesubiana
 
-## 📋 Descripción del Proyecto
+## � ¿Primera vez con el proyecto?
+
+**👉 Lee [INICIO-RAPIDO.md](./INICIO-RAPIDO.md) para empezar en 10 minutos.**
+
+---
+
+## �📋 Descripción del Proyecto
 
 Aplicación web full-stack para la fábrica de pastas artesanales **"L.V Pastas Frescas"** (La Vesubiana Pastas Frescas).
 
@@ -9,8 +15,9 @@ Aplicación web full-stack para la fábrica de pastas artesanales **"L.V Pastas 
 - 📦 Catálogo de productos con precios y detalles
 - 📝 Sistema de reviews para cada producto
 - 👨‍💼 Panel de administración para gestión de productos y precios
-- 🔐 Sistema de autenticación con JWT (Usuario/Administrador)
+- 🔐 Sistema de autenticación con **Keycloak** (IAM - Identity Access Management)
 - 🍝 Gestión de variantes de productos (ej: Ravioles de Jamón y Queso, Carne y Verdura, etc.)
+- 🐳 Despliegue con Docker para servicios de autenticación
 
 ---
 
@@ -21,11 +28,14 @@ Aplicación web full-stack para la fábrica de pastas artesanales **"L.V Pastas 
 - **Express** - Framework web
 - **Sequelize** - ORM para base de datos
 - **SQLite** - Base de datos
-- **JWT (jsonwebtoken)** - Autenticación
-- **bcryptjs** - Encriptación de contraseñas
+- **Keycloak** - Sistema de autenticación y autorización (IAM)
+- **JWT (jsonwebtoken)** - Validación de tokens
+- **jwks-rsa** - Validación de tokens de Keycloak
+- **bcryptjs** - Encriptación de contraseñas (legacy)
 - **cors** - Manejo de CORS
 - **dotenv** - Variables de entorno
 - **nodemon** - Auto-reinicio en desarrollo
+- **Docker** - Contenedores para Keycloak
 
 ### Frontend
 - **React** - Biblioteca de UI
@@ -34,7 +44,7 @@ Aplicación web full-stack para la fábrica de pastas artesanales **"L.V Pastas 
 - **Axios** - Cliente HTTP
 - **Bootstrap** - Framework CSS
 - **React Bootstrap** - Componentes React de Bootstrap
-- **React Hook Form** - Manejo de formularios
+- **keycloak-js** - Cliente de Keycloak para React
 - **Moment** - Manejo de fechas
 
 ---
@@ -78,6 +88,7 @@ TPI/
 - Node.js (v16 o superior)
 - npm (v8 o superior)
 - Git
+- Docker y Docker Compose (para Keycloak)
 
 ### 1️⃣ Clonar el Repositorio
 
@@ -86,7 +97,60 @@ git clone <url-del-repositorio>
 cd TPI
 ```
 
-### 2️⃣ Configuración del Backend
+### 2️⃣ Instalar y Configurar Docker (para Keycloak)
+
+#### En Ubuntu/Debian:
+```bash
+sudo apt update
+sudo apt install docker.io docker-compose -y
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+```
+
+**Nota:** Después de ejecutar `usermod`, cierra sesión y vuelve a iniciar para que los cambios surtan efecto.
+
+#### Verificar instalación:
+```bash
+docker --version
+docker-compose --version
+```
+
+### 3️⃣ Levantar Keycloak
+
+```bash
+# Desde la raíz del proyecto
+docker-compose up -d
+```
+
+Esto iniciará Keycloak en: `http://localhost:8080`
+
+#### Verificar que Keycloak esté corriendo:
+```bash
+docker ps
+# Deberías ver: lv-pastas-keycloak
+```
+
+#### Acceder a Keycloak Admin Console:
+1. Ir a: http://localhost:8080
+2. Click en "Administration Console"
+3. Login con:
+   - Usuario: `admin`
+   - Password: `admin`
+
+#### Configuración de Keycloak (SOLO LA PRIMERA VEZ):
+
+**⚠️ IMPORTANTE:** Seguí los pasos detallados en el archivo `KEYCLOAK-SETUP.md`
+
+Resumen rápido:
+1. Crear Realm: `lv-pastas`
+2. Crear Client: `lv-pastas-frontend`
+3. Crear Roles: `usuario`, `admin`
+4. Crear usuarios de prueba:
+   - Admin: `admin` / `admin123` (con roles: usuario, admin)
+   - Usuario: `usuario` / `usuario123` (con rol: usuario)
+
+### 4️⃣ Configuración del Backend
 
 #### Instalar dependencias:
 ```bash
@@ -98,7 +162,9 @@ npm install
 - express
 - sequelize
 - sqlite3
+- keycloak-connect
 - jsonwebtoken
+- jwks-rsa
 - bcryptjs
 - cors
 - dotenv
@@ -113,13 +179,22 @@ cp .env.example .env
 Editar el archivo `.env` y configurar:
 ```env
 PORT=3000
-JWT_SECRET=tu_clave_secreta_muy_segura_aqui
+
+# Configuración JWT (Deprecado - ahora usamos Keycloak)
+JWT_SECRET=facudo_secreto
 JWT_EXPIRES_IN=7d
+
+# Configuración de Keycloak (IMPORTANTE)
+KEYCLOAK_URL=http://localhost:8080
+KEYCLOAK_REALM=lv-pastas
+KEYCLOAK_CLIENT_ID=lv-pastas-frontend
+
+# Base de datos
 DB_PATH=./database.sqlite
 NODE_ENV=development
 ```
 
-⚠️ **IMPORTANTE:** Cambiar `JWT_SECRET` por una clave segura en producción.
+⚠️ **IMPORTANTE:** Asegurate de que las variables de Keycloak coincidan con tu configuración.
 
 #### Ejecutar el backend:
 ```bash
@@ -134,7 +209,7 @@ El servidor estará corriendo en: `http://localhost:3000`
 
 ---
 
-### 3️⃣ Configuración del Frontend
+### 5️⃣ Configuración del Frontend
 
 #### Instalar dependencias:
 ```bash
@@ -149,8 +224,8 @@ npm install
 - axios
 - bootstrap
 - react-bootstrap
+- keycloak-js
 - moment
-- react-hook-form
 - vite (dev)
 
 #### Configurar variables de entorno:
@@ -174,7 +249,43 @@ El frontend estará corriendo en: `http://localhost:5173`
 
 ---
 
+## 🎯 Orden de Inicio de Servicios
+
+Para que la aplicación funcione correctamente, debes iniciar los servicios en este orden:
+
+1. **Keycloak** (Docker):
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Backend** (Node.js):
+   ```bash
+   cd backend
+   npm run dev
+   ```
+
+3. **Frontend** (React):
+   ```bash
+   cd frontend-react
+   npm run dev
+   ```
+
+### Verificar que todo esté corriendo:
+- Keycloak: http://localhost:8080
+- Backend API: http://localhost:3000/api
+- Frontend: http://localhost:5173
+
+---
+
 ## 📝 Scripts Disponibles
+
+### Docker (Keycloak)
+```bash
+docker-compose up -d        # Inicia Keycloak en segundo plano
+docker-compose down         # Detiene Keycloak
+docker-compose logs -f      # Ver logs de Keycloak
+docker ps                   # Ver contenedores corriendo
+```
 
 ### Backend
 ```bash
@@ -191,13 +302,50 @@ npm run preview # Previsualiza la build de producción
 
 ---
 
-## 🔐 Sistema de Autenticación
+## 🔐 Sistema de Autenticación con Keycloak
 
-El proyecto implementa autenticación con JWT (JSON Web Tokens):
+El proyecto implementa autenticación con **Keycloak**, un sistema IAM (Identity and Access Management) profesional:
+
+### ¿Qué es Keycloak?
+Keycloak es una solución de autenticación y autorización open-source que proporciona:
+- 🔒 Single Sign-On (SSO)
+- 🔑 Gestión centralizada de usuarios
+- 🎫 Tokens JWT automáticos (RS256)
+- 👥 Gestión de roles y permisos
+- 🔄 Refresh tokens automáticos
+- 🌐 OAuth 2.0 y OpenID Connect
 
 ### Roles de usuario:
-- **Usuario regular**: Puede ver productos y crear reviews
-- **Administrador**: Puede crear/editar/eliminar productos y gestionar precios
+- **usuario**: Puede ver productos y crear comentarios/reviews
+- **admin**: Acceso completo al panel de administración
+
+### Flujo de Autenticación:
+1. Usuario hace click en "Iniciar Sesión"
+2. Es redirigido a Keycloak (http://localhost:8080)
+3. Ingresa credenciales en Keycloak
+4. Keycloak valida y genera token JWT
+5. Usuario es redirigido a la app con el token
+6. Token se usa para todas las peticiones al backend
+
+### Usuarios de Prueba:
+```
+Usuario normal:
+- Username: usuario
+- Password: usuario123
+- Rol: usuario
+
+Administrador:
+- Username: admin
+- Password: admin123
+- Roles: usuario, admin
+```
+
+### Gestionar Usuarios en Keycloak:
+1. Ir a: http://localhost:8080
+2. Login con `admin` / `admin`
+3. Seleccionar realm `lv-pastas`
+4. Menú: Users → Add user
+5. Asignar roles desde Role mapping
 
 ### Flujo de autenticación:
 1. Usuario se registra o inicia sesión

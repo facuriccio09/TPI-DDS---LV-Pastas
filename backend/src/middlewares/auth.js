@@ -1,7 +1,27 @@
 const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
 const { Usuario } = require('../models');
 
-// Middleware para verificar el token JWT
+// Configurar cliente JWKS para obtener las claves públicas de Keycloak
+const client = jwksClient({
+  jwksUri: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/certs`,
+  cache: true,
+  cacheMaxAge: 86400000 // 24 horas
+});
+
+// Función para obtener la clave de firma
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, (err, key) => {
+    if (err) {
+      callback(err);
+      return;
+    }
+    const signingKey = key.getPublicKey();
+    callback(null, signingKey);
+  });
+}
+
+// Middleware para verificar el token JWT de Keycloak
 const verificarToken = async (req, res, next) => {
   try {
     // Obtener el token del header Authorization
@@ -16,38 +36,76 @@ const verificarToken = async (req, res, next) => {
     // Extraer el token (quitar "Bearer ")
     const token = authHeader.substring(7);
 
-    // Verificar y decodificar el token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Verificar el token con Keycloak
+    // NOTA: Keycloak no siempre incluye 'aud' (audience) en tokens de check-sso
+    // Por eso lo hacemos opcional
+    jwt.verify(token, getKey, {
+      // audience: process.env.KEYCLOAK_CLIENT_ID, // Comentado - opcional para check-sso
+      issuer: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}`,
+      algorithms: ['RS256']
+    }, async (err, decoded) => {
+      if (err) {
+        console.error('❌ Error al verificar token:', err.message);
+        if (err.name === 'TokenExpiredError') {
+          return res.status(401).json({
+            error: 'Token expirado'
+          });
+        }
+        return res.status(401).json({
+          error: 'Token inválido',
+          detalle: err.message
+        });
+      }
+      
+      console.log('✅ Token verificado correctamente para:', decoded.email || decoded.preferred_username);
 
-    // Buscar el usuario en la base de datos
-    const usuario = await Usuario.findByPk(decoded.id);
+      try {
+        // Extraer información del token de Keycloak
+        const keycloakId = decoded.sub; // ID único de Keycloak
+        const email = decoded.email;
+        const nombre = decoded.name || decoded.preferred_username;
+        const roles = decoded.realm_access?.roles || [];
 
-    if (!usuario) {
-      return res.status(401).json({
-        error: 'Usuario no encontrado'
-      });
-    }
+        // Buscar o crear usuario en nuestra BD basado en el email
+        let usuario = await Usuario.findOne({ where: { email } });
 
-    if (!usuario.activo) {
-      return res.status(401).json({
-        error: 'Usuario inactivo'
-      });
-    }
+        if (!usuario) {
+          // Si el usuario no existe, lo creamos automáticamente
+          const rol = roles.includes('admin') ? 'admin' : 'usuario';
+          usuario = await Usuario.create({
+            nombre,
+            email,
+            password: 'keycloak-managed', // Password ficticio, no se usa
+            rol,
+            activo: true
+          });
+        } else {
+          // Actualizar rol si cambió en Keycloak
+          const nuevoRol = roles.includes('admin') ? 'admin' : 'usuario';
+          if (usuario.rol !== nuevoRol) {
+            usuario.rol = nuevoRol;
+            await usuario.save();
+          }
+        }
 
-    // Adjuntar el usuario al objeto request
-    req.usuario = usuario;
-    next();
+        if (!usuario.activo) {
+          return res.status(401).json({
+            error: 'Usuario inactivo'
+          });
+        }
+
+        // Adjuntar el usuario y los roles al objeto request
+        req.usuario = usuario;
+        req.keycloakRoles = roles;
+        next();
+      } catch (dbError) {
+        return res.status(500).json({
+          error: 'Error al procesar el usuario',
+          detalle: dbError.message
+        });
+      }
+    });
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({
-        error: 'Token inválido'
-      });
-    }
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        error: 'Token expirado'
-      });
-    }
     return res.status(500).json({
       error: 'Error al verificar el token',
       detalle: error.message

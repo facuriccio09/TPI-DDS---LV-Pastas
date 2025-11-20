@@ -1,11 +1,16 @@
 # 📚 Índice de Documentación - L.V Pastas Frescas
 
+## 🎯 **¿Primera vez? → [INICIO-RAPIDO.md](./INICIO-RAPIDO.md)** 
+
+---
+
 ## 📖 Guía de Lectura por Rol
 
 ### 🆕 Nuevo en el Proyecto
-1. **Empieza aquí** → `GUIA-RAPIDA.md`
+1. **🚀 EMPIEZA ACÁ** → `INICIO-RAPIDO.md` (10 minutos)
 2. Luego lee → `README.md`
-3. Si tienes dudas → `COMANDOS.md`
+3. Configurar Keycloak → `KEYCLOAK-SETUP.md`
+4. Si tenés dudas → `COMANDOS.md`
 
 ### 👨‍💻 Desarrollador Frontend
 1. `README.md` (sección Frontend)
@@ -33,7 +38,22 @@
 
 ## 📄 Descripción de Archivos
 
-### 📘 README.md (Principal)
+### � INICIO-RAPIDO.md ⭐ **NUEVO**
+**Propósito**: Guía paso a paso super simple para nuevos colaboradores  
+**Contiene**:
+- Requisitos previos con links de descarga
+- Instalación de Docker paso a paso
+- Configuración completa de Keycloak (con capturas)
+- Instalación de backend y frontend
+- Orden correcto de inicio
+- Problemas comunes con soluciones
+- URLs y credenciales de prueba
+
+**Cuándo leer**: ⭐ **PRIMERA VEZ que trabajas en el proyecto** (10 minutos)
+
+---
+
+### �📘 README.md (Principal)
 **Propósito**: Documentación completa del proyecto  
 **Contiene**:
 - Descripción del proyecto
@@ -45,7 +65,34 @@
 - Modelos de base de datos
 - Próximos pasos
 
-**Cuándo leer**: Primera vez que trabajas en el proyecto
+**Cuándo leer**: Primera vez que trabajas en el proyecto (documentación técnica completa)
+
+---
+
+### 🔐 KEYCLOAK-SETUP.md
+**Propósito**: Configuración detallada de Keycloak paso a paso  
+**Contiene**:
+- Qué es Keycloak y por qué lo usamos
+- Instalación de Docker
+- Configuración del realm
+- Configuración del client
+- Creación de roles y usuarios
+- Troubleshooting específico de Keycloak
+
+**Cuándo leer**: Primera configuración de Keycloak o cuando tenés problemas de autenticación
+
+---
+
+### 🔗 KEYCLOAK-INTEGRACION.md
+**Propósito**: Explicación técnica de cómo funciona la integración con Keycloak  
+**Contiene**:
+- Flujo de autenticación completo
+- Cómo funciona el backend con Keycloak
+- Cómo funciona el frontend con Keycloak
+- Diagrama de flujo
+- Explicación de tokens JWT
+
+**Cuándo leer**: Cuando necesitás entender cómo funciona la autenticación internamente
 
 ---
 
