@@ -108,6 +108,13 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const register = () => {
+    const keycloak = getKeycloakInstance();
+    keycloak.register({
+      redirectUri: window.location.origin + '/'
+    });
+  };
+
   const logout = () => {
     const keycloak = getKeycloakInstance();
     localStorage.removeItem('token');
@@ -125,6 +132,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{ 
       user, 
       login, 
+      register,
       logout, 
       isAdmin, 
       loading,
