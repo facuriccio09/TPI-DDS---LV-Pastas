@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Ingrediente, Publicacion, PublicacionIngrediente } = require('../models');
+// IMPORTANTE: Agregamos 'sequelize' para poder usar transacciones
+const { Ingrediente, Publicacion, PublicacionIngrediente, sequelize } = require('../models');
 const { verificarToken, esAdmin } = require('../middlewares/auth');
+
+// --- RUTAS GET (LECTURA - SIN TRANSACCIÓN EXPLÍCITA) ---
 
 // GET /api/ingredientes - Obtener todos los ingredientes (público)
 router.get('/', async (req, res, next) => {
@@ -72,35 +75,47 @@ router.get('/alergenos/lista', async (req, res, next) => {
   }
 });
 
+// --- RUTAS DE ESCRITURA (CON TRANSACCIONES) ---
+
 // POST /api/ingredientes - Crear un ingrediente (requiere admin)
 router.post('/', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { nombre, esAlergeno, descripcion } = req.body;
 
     const ingrediente = await Ingrediente.create({
       nombre,
       esAlergeno,
       descripcion
-    });
+    }, { transaction: t });
+
+    await t.commit();
 
     res.status(201).json({
       mensaje: 'Ingrediente creado exitosamente',
       ingrediente
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
 
 // PUT /api/ingredientes/:id - Actualizar un ingrediente (requiere admin)
 router.put('/:id', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { id } = req.params;
     const { nombre, esAlergeno, descripcion } = req.body;
 
-    const ingrediente = await Ingrediente.findByPk(id);
+    const ingrediente = await Ingrediente.findByPk(id, { transaction: t });
 
     if (!ingrediente) {
+      await t.rollback();
       return res.status(404).json({
         error: 'Ingrediente no encontrado'
       });
@@ -110,99 +125,125 @@ router.put('/:id', verificarToken, esAdmin, async (req, res, next) => {
       nombre,
       esAlergeno,
       descripcion
-    });
+    }, { transaction: t });
+
+    await t.commit();
 
     res.json({
       mensaje: 'Ingrediente actualizado exitosamente',
       ingrediente
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
 
 // DELETE /api/ingredientes/:id - Eliminar un ingrediente (requiere admin)
 router.delete('/:id', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { id } = req.params;
 
-    const ingrediente = await Ingrediente.findByPk(id);
+    const ingrediente = await Ingrediente.findByPk(id, { transaction: t });
 
     if (!ingrediente) {
+      await t.rollback();
       return res.status(404).json({
         error: 'Ingrediente no encontrado'
       });
     }
 
-    await ingrediente.destroy();
+    await ingrediente.destroy({ transaction: t });
+
+    await t.commit();
 
     res.json({
       mensaje: 'Ingrediente eliminado exitosamente'
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
 
+// --- MANEJO DE ASOCIACIONES (CRÍTICO PARA INTEGRIDAD) ---
+
 // POST /api/ingredientes/:id/publicaciones - Asociar ingrediente a una publicación (requiere admin)
 router.post('/:id/publicaciones', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { id } = req.params;
     const { publicacionId, cantidad } = req.body;
 
-    const ingrediente = await Ingrediente.findByPk(id);
-    const publicacion = await Publicacion.findByPk(publicacionId);
+    // Buscamos ambos dentro de la transacción para asegurar que existen al momento de vincular
+    const ingrediente = await Ingrediente.findByPk(id, { transaction: t });
+    const publicacion = await Publicacion.findByPk(publicacionId, { transaction: t });
 
     if (!ingrediente) {
-      return res.status(404).json({
-        error: 'Ingrediente no encontrado'
-      });
+      await t.rollback();
+      return res.status(404).json({ error: 'Ingrediente no encontrado' });
     }
 
     if (!publicacion) {
-      return res.status(404).json({
-        error: 'Publicación no encontrada'
-      });
+      await t.rollback();
+      return res.status(404).json({ error: 'Publicación no encontrada' });
     }
 
+    // Creamos la relación en la tabla intermedia
     await PublicacionIngrediente.create({
       publicacionId,
       ingredienteId: id,
       cantidad
-    });
+    }, { transaction: t });
+
+    await t.commit();
 
     res.status(201).json({
       mensaje: 'Ingrediente asociado a la publicación exitosamente'
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
 
 // DELETE /api/ingredientes/:id/publicaciones/:publicacionId - Desasociar ingrediente de publicación (requiere admin)
 router.delete('/:id/publicaciones/:publicacionId', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { id, publicacionId } = req.params;
 
     const asociacion = await PublicacionIngrediente.findOne({
       where: {
         ingredienteId: id,
         publicacionId
-      }
+      },
+      transaction: t // Buscamos dentro de la transacción
     });
 
     if (!asociacion) {
+      await t.rollback();
       return res.status(404).json({
         error: 'Asociación no encontrada'
       });
     }
 
-    await asociacion.destroy();
+    await asociacion.destroy({ transaction: t });
+
+    await t.commit();
 
     res.json({
       mensaje: 'Ingrediente desasociado de la publicación exitosamente'
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });

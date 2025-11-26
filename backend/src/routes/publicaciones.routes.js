@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Publicacion, Comentario, Usuario, Categoria, Ingrediente } = require('../models');
+// IMPORTANTE: Agregamos 'sequelize' a la importación
+const { Publicacion, Comentario, Usuario, Categoria, Ingrediente, sequelize } = require('../models');
 const { verificarToken, esAdmin } = require('../middlewares/auth');
+
+// --- RUTAS GET (LECTURA - SIN TRANSACCIÓN EXPLÍCITA) ---
 
 // GET /api/publicaciones - Obtener todas las publicaciones (público)
 router.get('/', async (req, res, next) => {
@@ -35,7 +38,7 @@ router.get('/', async (req, res, next) => {
       offset: offset
     });
 
-    // Calcular calificación promedio para cada publicación
+    // Calcular calificación promedio
     const publicacionesConPromedio = publicaciones.map(pub => {
       const pubJSON = pub.toJSON();
       if (pubJSON.comentarios && pubJSON.comentarios.length > 0) {
@@ -121,13 +124,19 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
+// --- RUTAS DE ESCRITURA (CON TRANSACCIONES) ---
+
 // POST /api/publicaciones - Crear nueva publicación (solo admin)
 router.post('/', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { nombre, descripcion, precio, ingredientes, variantes, imagen, categoria, disponible, destacado } = req.body;
 
     // Validar campos requeridos
     if (!nombre || !descripcion || !precio || !ingredientes) {
+      await t.rollback(); // Rollback antes de retornar error
       return res.status(400).json({
         error: 'Los campos nombre, descripción, precio e ingredientes son requeridos'
       });
@@ -143,26 +152,33 @@ router.post('/', verificarToken, esAdmin, async (req, res, next) => {
       categoria: categoria || 'Pastas',
       disponible: disponible !== undefined ? disponible : true,
       destacado: destacado || false
-    });
+    }, { transaction: t }); // Pasamos la transacción
+
+    await t.commit(); // Confirmamos
 
     res.status(201).json({
       message: 'Publicación creada exitosamente',
       publicacion: nuevaPublicacion
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
 
 // PUT /api/publicaciones/:id - Actualizar publicación (solo admin)
 router.put('/:id', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { id } = req.params;
     const { nombre, descripcion, precio, ingredientes, variantes, imagen, categoria, disponible, destacado } = req.body;
 
-    const publicacion = await Publicacion.findByPk(id);
+    const publicacion = await Publicacion.findByPk(id, { transaction: t });
 
     if (!publicacion) {
+      await t.rollback();
       return res.status(404).json({
         error: 'Publicación no encontrada'
       });
@@ -179,68 +195,86 @@ router.put('/:id', verificarToken, esAdmin, async (req, res, next) => {
     if (disponible !== undefined) publicacion.disponible = disponible;
     if (destacado !== undefined) publicacion.destacado = destacado;
 
-    await publicacion.save();
+    await publicacion.save({ transaction: t });
+
+    await t.commit();
 
     res.json({
       message: 'Publicación actualizada exitosamente',
       publicacion
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
 
 // DELETE /api/publicaciones/:id - Eliminar publicación (solo admin)
 router.delete('/:id', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { id } = req.params;
 
-    const publicacion = await Publicacion.findByPk(id);
+    const publicacion = await Publicacion.findByPk(id, { transaction: t });
 
     if (!publicacion) {
+      await t.rollback();
       return res.status(404).json({
         error: 'Publicación no encontrada'
       });
     }
 
-    await publicacion.destroy();
+    await publicacion.destroy({ transaction: t });
+
+    await t.commit();
 
     res.json({
       message: 'Publicación eliminada exitosamente'
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
 
 // PATCH /api/publicaciones/:id/disponibilidad - Cambiar disponibilidad (solo admin)
 router.patch('/:id/disponibilidad', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { id } = req.params;
     const { disponible } = req.body;
 
     if (disponible === undefined) {
+      await t.rollback();
       return res.status(400).json({
         error: 'El campo disponible es requerido'
       });  
     }
 
-    const publicacion = await Publicacion.findByPk(id);
+    const publicacion = await Publicacion.findByPk(id, { transaction: t });
 
     if (!publicacion) {
+      await t.rollback();
       return res.status(404).json({
         error: 'Publicación no encontrada'
       });
     }
 
     publicacion.disponible = disponible;
-    await publicacion.save();
+    await publicacion.save({ transaction: t });
+
+    await t.commit();
 
     res.json({
       message: `Publicación ${disponible ? 'habilitada' : 'deshabilitada'} exitosamente`,
       publicacion
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });

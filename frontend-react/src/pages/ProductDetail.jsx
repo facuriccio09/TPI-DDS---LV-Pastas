@@ -46,7 +46,7 @@ const ProductDetail = () => {
           
           // Verificar si el usuario ya comentó
           if (user) {
-            const miComentario = listaComentarios.find(c => c.usuarioId === user.id);
+            const miComentario = listaComentarios.find(c => c.usuario?.email === user.email);
             setComentarioDelUsuario(miComentario || null);
           }
         } catch (comentarioErr) {
@@ -82,7 +82,7 @@ const ProductDetail = () => {
       
       // Verificar si el usuario ya comentó
       if (user) {
-        const miComentario = listaComentarios.find(c => c.usuarioId === user.id);
+        const miComentario = listaComentarios.find(c => c.usuario?.email === user.email);
         setComentarioDelUsuario(miComentario || null);
       }
     } catch (err) {
@@ -412,9 +412,9 @@ const ProductDetail = () => {
                                   </small>
                                   
                                   {/* Botones de edición/eliminación */}
-                                  {user && (comentario.usuarioId === user.id || isAdmin()) && (
+                                  {user && (comentario.usuario?.email === user.email || isAdmin()) && (
                                     <div className="ms-2">
-                                      {comentario.usuarioId === user.id && (
+                                      {comentario.usuario?.email === user.email && (
                                         <Button
                                           variant="outline-primary"
                                           size="sm"

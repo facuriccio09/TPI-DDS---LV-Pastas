@@ -1,3 +1,4 @@
+const { sequelize } = require('../db');
 const Usuario = require('./Usuario');
 const Publicacion = require('./Publicacion');
 const Comentario = require('./Comentario');
@@ -59,6 +60,7 @@ Ingrediente.belongsToMany(Publicacion, {
 });
 
 module.exports = {
+  sequelize,
   Usuario,
   Publicacion,
   Comentario,

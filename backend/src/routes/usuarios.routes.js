@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { Usuario } = require('../models');
+// IMPORTANTE: Asegúrate de desestructurar 'sequelize' aquí para usar transacciones
+const { Usuario, sequelize } = require('../models');
 const { verificarToken, esAdmin } = require('../middlewares/auth');
 
 // NOTA: Login y registro ahora se manejan con Keycloak
@@ -56,20 +57,28 @@ router.get('/:id', verificarToken, esAdmin, async (req, res, next) => {
 
 // PUT /api/usuarios/:id - Actualizar usuario
 router.put('/:id', verificarToken, async (req, res, next) => {
+  let t; // Variable para la transacción
+
   try {
+    // 1. Iniciamos la transacción
+    t = await sequelize.transaction();
+
     const { id } = req.params;
     const { nombre, email, password } = req.body;
 
     // Verificar que el usuario pueda actualizar (solo el mismo usuario o admin)
     if (req.usuario.id !== parseInt(id) && req.usuario.rol !== 'admin') {
+      await t.rollback(); // Cancelamos transacción antes de responder
       return res.status(403).json({
         error: 'No tienes permisos para actualizar este usuario'
       });
     }
 
-    const usuario = await Usuario.findByPk(id);
+    // Buscamos el usuario DENTRO de la transacción para asegurar consistencia
+    const usuario = await Usuario.findByPk(id, { transaction: t });
 
     if (!usuario) {
+      await t.rollback(); // Cancelamos si no existe
       return res.status(404).json({
         error: 'Usuario no encontrado'
       });
@@ -78,27 +87,40 @@ router.put('/:id', verificarToken, async (req, res, next) => {
     // Actualizar campos
     if (nombre) usuario.nombre = nombre;
     if (email) usuario.email = email;
-    if (password) usuario.password = password; // Se encripta con el hook
+    if (password) usuario.password = password; // Se encripta con el hook del modelo
 
-    await usuario.save();
+    // 2. Guardamos pasando la transacción
+    await usuario.save({ transaction: t });
+
+    // 3. Confirmamos los cambios permanentemente
+    await t.commit();
 
     res.json({
       message: 'Usuario actualizado exitosamente',
       usuario
     });
+
   } catch (error) {
+    // 4. Si ocurre cualquier error, deshacemos los cambios
+    if (t) await t.rollback();
     next(error);
   }
 });
 
 // DELETE /api/usuarios/:id - Eliminar usuario (solo admin)
 router.delete('/:id', verificarToken, esAdmin, async (req, res, next) => {
+  let t; // Variable para la transacción
+
   try {
+    // 1. Iniciamos la transacción
+    t = await sequelize.transaction();
+
     const { id } = req.params;
 
-    const usuario = await Usuario.findByPk(id);
+    const usuario = await Usuario.findByPk(id, { transaction: t });
 
     if (!usuario) {
+      await t.rollback(); // Cancelamos si no existe
       return res.status(404).json({
         error: 'Usuario no encontrado'
       });
@@ -106,12 +128,20 @@ router.delete('/:id', verificarToken, esAdmin, async (req, res, next) => {
 
     // En lugar de eliminar, desactivar
     usuario.activo = false;
-    await usuario.save();
+    
+    // 2. Guardamos pasando la transacción
+    await usuario.save({ transaction: t });
+
+    // 3. Confirmamos los cambios
+    await t.commit();
 
     res.json({
       message: 'Usuario desactivado exitosamente'
     });
+
   } catch (error) {
+    // 4. Si ocurre cualquier error, deshacemos los cambios
+    if (t) await t.rollback();
     next(error);
   }
 });

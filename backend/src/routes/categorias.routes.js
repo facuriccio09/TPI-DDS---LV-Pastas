@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Categoria, Publicacion } = require('../models');
+// IMPORTANTE: Agregamos 'sequelize' a la importación
+const { Categoria, Publicacion, sequelize } = require('../models');
 const { verificarToken, esAdmin } = require('../middlewares/auth');
+
+// --- RUTAS GET (LECTURA - SIN TRANSACCIÓN EXPLÍCITA) ---
 
 // GET /api/categorias - Obtener todas las categorías (público)
 router.get('/', async (req, res, next) => {
@@ -60,35 +63,47 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
+// --- RUTAS DE ESCRITURA (CON TRANSACCIONES) ---
+
 // POST /api/categorias - Crear una categoría (requiere admin)
 router.post('/', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { nombre, descripcion, activo } = req.body;
 
     const categoria = await Categoria.create({
       nombre,
       descripcion,
       activo
-    });
+    }, { transaction: t });
+
+    await t.commit();
 
     res.status(201).json({
       mensaje: 'Categoría creada exitosamente',
       categoria
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
 
 // PUT /api/categorias/:id - Actualizar una categoría (requiere admin)
 router.put('/:id', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { id } = req.params;
     const { nombre, descripcion, activo } = req.body;
 
-    const categoria = await Categoria.findByPk(id);
+    const categoria = await Categoria.findByPk(id, { transaction: t });
 
     if (!categoria) {
+      await t.rollback();
       return res.status(404).json({
         error: 'Categoría no encontrada'
       });
@@ -98,62 +113,80 @@ router.put('/:id', verificarToken, esAdmin, async (req, res, next) => {
       nombre,
       descripcion,
       activo
-    });
+    }, { transaction: t });
+
+    await t.commit();
 
     res.json({
       mensaje: 'Categoría actualizada exitosamente',
       categoria
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
 
 // DELETE /api/categorias/:id - Eliminar una categoría (requiere admin)
 router.delete('/:id', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { id } = req.params;
 
-    const categoria = await Categoria.findByPk(id);
+    const categoria = await Categoria.findByPk(id, { transaction: t });
 
     if (!categoria) {
+      await t.rollback();
       return res.status(404).json({
         error: 'Categoría no encontrada'
       });
     }
 
-    await categoria.destroy();
+    await categoria.destroy({ transaction: t });
+
+    await t.commit();
 
     res.json({
       mensaje: 'Categoría eliminada exitosamente'
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
 
 // PATCH /api/categorias/:id/toggle - Activar/Desactivar categoría (requiere admin)
 router.patch('/:id/toggle', verificarToken, esAdmin, async (req, res, next) => {
+  let t;
   try {
+    t = await sequelize.transaction();
+
     const { id } = req.params;
 
-    const categoria = await Categoria.findByPk(id);
+    const categoria = await Categoria.findByPk(id, { transaction: t });
 
     if (!categoria) {
+      await t.rollback();
       return res.status(404).json({
         error: 'Categoría no encontrada'
       });
     }
 
+    // Actualizamos pasando la transacción
     await categoria.update({
       activo: !categoria.activo
-    });
+    }, { transaction: t });
+
+    await t.commit();
 
     res.json({
       mensaje: `Categoría ${categoria.activo ? 'activada' : 'desactivada'} exitosamente`,
       categoria
     });
   } catch (error) {
+    if (t) await t.rollback();
     next(error);
   }
 });
